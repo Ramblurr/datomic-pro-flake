@@ -39,10 +39,12 @@ I wouldn't really do this in production I would use a tool like
 [agenix](https://github.com/ryantm/agenix) or
 [sops-nix](https://github.com/Mic92/sops-nix).
 
-Whatever you do, do not use
-[`environment.etc`](https://search.nixos.org/options?channel=24.05&show=environment.etc&from=0&size=50&sort=relevance&type=packages&query=environment.etc)
-to create the secret files! That will write the secrets into the globally
-readable nix store, and could end up on a nix cache somewhere. Bad news!
+
+> [!IMPORTANT]
+> Whatever you do, do not use
+> [`environment.etc`](https://search.nixos.org/options?channel=24.05&show=environment.etc&from=0&size=50&sort=relevance&type=packages&query=environment.etc)
+> to create the secret files! That will write the secrets into the globally
+> readable nix store, and could end up on a nix cache somewhere. Bad news!
 
 ``` java-properties
 # in `/etc/datomic-pro/secrets.properties`
