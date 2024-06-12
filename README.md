@@ -8,6 +8,8 @@
 
 > 🐋 Looking for a container / docker image instead? Check out my other repo [ramblurr/containers](https://github.com/Ramblurr/containers/tree/main/apps/datomic-pro).
 
+This repo also contains a working NixOS module test that runs the flake inside a virtual machine in CI to verify that it's working.
+
 ## Usage
 
 ### `flake.nix`
@@ -17,7 +19,8 @@
   inputs.
    inputs = {
         nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-        datomic-pro.url = "https://flakehub.com/f/Ramblurr/datomic-pro/*.tar.gz";
+        # Check https://github.com/Ramblurr/datomic-pro-flake/releases for the latest release tag
+        datomic-pro.url = "https://flakehub.com/f/Ramblurr/datomic-pro/0.1.0.tar.gz";
         datomic-pro.nixpkgs = "nixpkgs";
     };
     outputs = { nixpkgs, datomic-pro, ... }@attrs: {
