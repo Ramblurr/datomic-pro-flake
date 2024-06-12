@@ -8,9 +8,20 @@
 let
   cfg = config.services.datomic-pro;
   settingsFormat = pkgs.formats.javaProperties { };
-  propertiesFile = settingsFormat.generate "transactor.properties" cfg.settings;
   stateDir = "/var/lib/${cfg.stateDirectoryName}";
   runtimePropertiesPath = "${stateDir}/transactor.properties";
+  # default settings that will be used unless overriden by the user
+  settingsDefault = {
+    host = "localhost";
+    memory-index-max = "256m";
+    memory-index-threshold = "32m";
+    object-cache-max = "128m";
+    port = 4334;
+    protocol = "dev";
+    data-dir = "${stateDir}/data";
+    log-dir = "${stateDir}/log";
+  };
+  propertiesFile = settingsFormat.generate "transactor.properties" (settingsDefault // cfg.settings);
 in
 {
   options = {
@@ -21,7 +32,11 @@ in
       secretsFile = lib.mkOption {
         type = lib.types.nullOr lib.types.path;
         default = null;
-        description = "Path to a file containing secret properties that will be concatenated to the generated properties file at runtime.";
+        description = ''
+          Secret configuration concatenated to the transactor properties at runtime.
+
+          Should be owned by root and have 0600 permissions.
+        '';
       };
 
       stateDirectoryName = lib.mkOption {
@@ -68,8 +83,9 @@ in
       path = [ cfg.javaPackage ];
       preStart = ''
         cat ${propertiesFile} > ${runtimePropertiesPath}
+        chmod 0600 ${runtimePropertiesPath}
         ${lib.optionalString (cfg.secretsFile != null) ''
-          cat ${cfg.secretsFile} >> ${runtimePropertiesPath}
+          cat $CREDENTIALS_DIRECTORY/datomic-pro-secrets >> ${runtimePropertiesPath}
         ''}
         mkdir -p ${stateDir}/data ${stateDir}/log
       '';
@@ -80,6 +96,7 @@ in
         Type = "simple";
         DynamicUser = true;
         StateDirectory = cfg.stateDirectoryName;
+        LoadCredential = lib.mkIf (cfg.secretsFile != null) [ "datomic-pro-secrets:${cfg.secretsFile}" ];
         Restart = "always";
         MemoryDenyWriteExecute = false; # required for the jvm
         NoNewPrivileges = true;

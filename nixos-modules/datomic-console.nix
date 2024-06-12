@@ -16,7 +16,6 @@ in
       javaPackage = lib.mkPackageOption pkgs "temurin-bin" { };
       port = lib.mkOption {
         type = lib.types.port;
-        default = 4335;
         description = "The port the console will bind to";
       };
       alias = lib.mkOption {
@@ -26,7 +25,11 @@ in
       };
       dbUriFile = lib.mkOption {
         type = lib.types.path;
-        description = "Path to a file containing the datomic: database uri";
+        description = ''
+          Path to a file containing the 'datomic:' database uri
+
+          Should be owned by root and have 0600 permissions.
+        '';
       };
 
       stateDirectoryName = lib.mkOption {
@@ -40,9 +43,9 @@ in
 
     assertions = [
       {
-        assertion = lib.strings.contains "/" cfg.stateDirectoryName == false;
+        assertion = lib.strings.hasInfix "/" cfg.stateDirectoryName == false;
         message = ''
-          <option>services.datomic-pro.stateDirectoryName> must be a single directory name, not a path with /.
+          <option>services.datomic-console.stateDirectoryName> must be a single directory name, not a path with /.
         '';
       }
     ];
@@ -59,7 +62,6 @@ in
         LoadCredential = [ "datomic-console-db-uri:${cfg.dbUriFile}" ];
         DynamicUser = true;
         StateDirectory = cfg.stateDirectoryName;
-        WorkingDirectory = cfg.stateDirectoryName;
         Restart = "always";
         MemoryDenyWriteExecute = false; # required for the jvm
         NoNewPrivileges = true;
