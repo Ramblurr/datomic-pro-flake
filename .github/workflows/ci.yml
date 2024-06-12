@@ -22,8 +22,10 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - uses: DeterminateSystems/flake-checker-action@main
-      - name: Run `nix build`
+      - name: Build datomic-pro nix package
         run: nix build .#datomic-pro
+      - name: Run NixOS module tests
+        run: nix flake check
 
   publish:
     needs: check
