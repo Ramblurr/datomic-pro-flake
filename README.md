@@ -4,7 +4,9 @@
 [![GitHub License](https://img.shields.io/github/license/ramblurr/datomic-pro-flake)](./LICENSE)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ramblurr/datomic-pro-flake/ci.yml)](https://github.com/Ramblurr/datomic-pro-flake/actions/workflows/ci.yml)
 
-This flake exposes a `datomic-pro` nix package and several NixOS modules for running Datomic Pro on NixOS.
+❄️ This flake exposes a `datomic-pro` nix package and several NixOS modules for running Datomic Pro on NixOS.
+
+> 🐋 Looking for a container / docker image instead? Check out my other repo [ramblurr/containers](https://github.com/Ramblurr/containers/tree/main/apps/datomic-pro).
 
 ## Usage
 
@@ -43,11 +45,14 @@ to create the secret files! That will write the secrets into the globally
 readable nix store, and could end up on a nix cache somewhere. Bad news!
 
 ``` java-properties
+# in `/etc/datomic-pro/secrets.properties`
 storage-admin-password=changeme
 storage-datomic-password=changeme
 ```
 
 ``` shell
+# set permissions carefully, it just needs to be root owned
+# even though datomic doesn't run as root (thanks systemd!)
 chown root:root /etc/datomic-pro/secrets.properties
 chmod 0600 /etc/datomic-pro/secrets.properties
 ```
@@ -58,10 +63,10 @@ A basic dev-mode datomic that stores its state in `/var/lib/datomic-pro`:
 
 ``` nix
 {
-    # ... the rest of your config ...
     services.datomic-pro = {
         secretsFile = "/etc/datomic-pro/secrets.properties";
         settings = {
+            # no secrets in here!
             enable = true;
             host = "localhost";
             port = 4334;
@@ -79,6 +84,8 @@ A basic dev-mode datomic that stores its state in `/var/lib/datomic-pro`:
         port = 8080;
         dbUriFile = ..path to secret file containing something like datomic:dev://localhost:4334/.....
     };
+
+    # ... the rest of your owl ...
 }
 ```
 
