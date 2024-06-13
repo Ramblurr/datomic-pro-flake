@@ -13,13 +13,13 @@ in
     services.datomic-console = {
       enable = lib.mkEnableOption "Datomic Pro Console";
       package = lib.mkPackageOption pkgs "datomic-pro" { };
-      javaPackage = lib.mkPackageOption pkgs "temurin-bin" { };
+      javaPackage = lib.mkPackageOption pkgs "jdk-minimal" { };
       port = lib.mkOption {
         type = lib.types.port;
         description = "The port the console will bind to";
       };
       alias = lib.mkOption {
-        type = lib.types.string;
+        type = lib.types.str;
         default = "dev";
         description = "A text-based name for a transactor that is associated with a transactor URI that does not include a database name";
       };

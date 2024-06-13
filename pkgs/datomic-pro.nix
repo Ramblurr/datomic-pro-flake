@@ -2,9 +2,12 @@
   lib,
   stdenv,
   fetchzip,
-  temurin-bin,
+  jdk-minimal,
   ...
 }:
+
+let
+in
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "datomic-pro";
@@ -14,7 +17,7 @@ stdenv.mkDerivation (finalAttrs: {
     url = "https://datomic-pro-downloads.s3.amazonaws.com/${finalAttrs.version}/datomic-pro-${finalAttrs.version}.zip";
     sha256 = "sha256-5WBtENqvH7n2iuNxXwjPlR7tDiKSYoF7EXgBE6BflGg=";
   };
-  propagatedBuildInputs = [ temurin-bin ];
+  propagatedBuildInputs = [ jdk-minimal ];
   installPhase = ''
     runHook preInstall
     ls -al $src

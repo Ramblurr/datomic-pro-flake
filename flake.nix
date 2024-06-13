@@ -17,78 +17,50 @@
           inherit system;
           overlays = [ self.overlays."${system}" ];
         };
+
+        jdk-minimal = pkgs.jdk21.override {
+          headless = true;
+          enableJavaFX = false;
+          enableGnome2 = false;
+        };
       in
       {
-        overlays = final: prev: { datomic-pro = pkgs.callPackage ./pkgs/datomic-pro.nix { }; };
+        overlays = final: prev: {
+          jdk-minimal = jdk-minimal;
+          datomic-pro = pkgs.callPackage ./pkgs/datomic-pro.nix { };
+          datomic-pro-container = pkgs.callPackage ./pkgs/datomic-pro-container-image.nix { };
+          datomic-generate-properties = pkgs.callPackage ./pkgs/datomic-generate-properties.nix { };
+        };
         packages = {
           default = self.packages.${system}.datomic-pro;
           datomic-pro = pkgs.datomic-pro;
+          datomic-pro-container = pkgs.datomic-pro-container;
+          datomic-generate-properties = pkgs.datomic-generate-properties;
         };
         nixosModules = {
           datomic-pro = import ./nixos-modules/datomic-pro.nix;
           datomic-console = import ./nixos-modules/datomic-console.nix;
         };
         checks = {
-          # A VM test of the NixOS module.
-          vmTest =
-            with import (nixpkgs + "/nixos/lib/testing-python.nix") { inherit system; };
+          # A test of the NixOS module that runs in a VM
+          moduleTest = import ./tests/nixos-module.nix {
+            inherit
+              system
+              pkgs
+              nixpkgs
+              self
+              ;
+          };
 
-            makeTest {
-              name = "datomic-pro module test";
-              nodes = {
-                client =
-                  { ... }:
-                  {
-                    nixpkgs.overlays = [ self.overlays."${system}" ];
-                    virtualisation.memorySize = 2048;
-                    imports = [
-                      self.nixosModules.${system}.datomic-pro
-                      self.nixosModules.${system}.datomic-console
-                    ];
-                    environment.etc."datomic-pro/do-not-do-this.properties" = {
-                      text = ''
-                        storage-admin-password=do-not-do-it-this-way-in-prod
-                        storage-datomic-password=do-not-do-it-this-way-in-prod
-                      '';
-                      mode = "0600";
-                    };
-                    services.datomic-pro = {
-                      enable = true;
-                      secretsFile = "/etc/datomic-pro/do-not-do-this.properties";
-                      settings = {
-                        enable = true;
-                        host = "localhost";
-                        port = 4334;
-                        memory-index-max = "256m";
-                        memory-index-threshold = "32m";
-                        object-cache-max = "128m";
-                        protocol = "dev";
-                        storage-access = "remote";
-                      };
-                    };
-
-                    environment.etc."datomic-console/do-not-do-this" = {
-                      text = "datomic:dev://localhost:4334/?password=do-not-do-it-this-way-in-prod";
-                      mode = "0600";
-                    };
-                    services.datomic-console = {
-                      enable = true;
-                      alias = "dev";
-                      port = 8080;
-                      dbUriFile = "/etc/datomic-console/do-not-do-this";
-                    };
-                  };
-              };
-
-              testScript = ''
-                start_all()
-                machine.wait_for_unit("datomic-pro.service")
-                machine.wait_for_open_port(4334)
-                machine.wait_for_unit("datomic-console.service")
-                machine.wait_for_open_port(8080)
-                machine.succeed("curl --fail http://localhost:8080/browse")
-              '';
-            };
+          # A test of the container image that runs in a VM
+          containerImageTest = import ./tests/container-image.nix {
+            inherit
+              system
+              pkgs
+              nixpkgs
+              self
+              ;
+          };
         };
       }
     );
