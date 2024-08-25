@@ -93,6 +93,7 @@ A basic dev-mode datomic that stores its state in `/var/lib/datomic-pro`:
 ``` nix
 {
     services.datomic-pro = {
+        enable = true;
         secretsFile = "/etc/datomic-pro/secrets.properties";
         settings = {
             # no secrets in here!
