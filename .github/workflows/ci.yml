@@ -1,6 +1,8 @@
 ---
 name: CI
-
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id }}
+  cancel-in-progress: true
 on:
   push:
   pull_request:
@@ -24,6 +26,8 @@ jobs:
       - uses: DeterminateSystems/flake-checker-action@main
       - name: Build datomic-pro nix package
         run: nix build .#datomic-pro
+      - name: Build datomic-pro oci image
+        run: nix build .#datomic-pro-container -o container
       - name: Run NixOS module tests
         run: nix flake check
 
@@ -33,15 +37,29 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    if: startsWith(github.ref, 'refs/tags/v')
+      packages: write
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.tag != null
     steps:
+      - name: Verify tag format
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [[ ! "${{ inputs.tag }}" =~ ^v ]]; then
+            echo "Error: Tag must start with 'v' prefix"
+            exit 1
+          fi
       - uses: actions/checkout@v4
         with:
-          ref: "${{ (inputs.tag != null) && format('refs/tags/{0}', inputs.tag) || '' }}"
+          ref: "${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.tag) || github.ref }}"
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Build datomic-pro oci image
+        run: nix build .#datomic-pro-container -o container
+      - name: Push container image on new releases
+        run: |
+          datomic_version=$(grep 'version = ' pkgs/datomic-pro.nix | cut -d'"' -f2)
+          nix develop --ignore-environment --command skopeo copy --dest-creds="ramblurr:${{ github.token }}" docker-archive:./container docker://ghcr.io/ramblurr/datomic-pro:$datomic_version
       - uses: DeterminateSystems/flakehub-push@main
         with:
           visibility: public
           name: Ramblurr/datomic-pro
-          tag: "${{ inputs.tag }}"
+          tag: "${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"

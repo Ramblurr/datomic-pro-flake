@@ -1,0 +1,22 @@
+---
+ignore: |
+  .yamllint.yml
+extends: default
+rules:
+  truthy:
+    allowed-values: ["true", "false"]
+  line-length: disable
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+    level: error
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 0
+    level: error
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
+  new-lines: disable
+  comments: disable
+  comments-indentation: disable

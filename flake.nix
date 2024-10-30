@@ -57,6 +57,13 @@
               ;
           };
         };
+        devShells.default = pkgs.mkShell {
+          buildInputs = [
+            pkgs.skopeo
+            pkgs.babashka
+            pkgs.gnumake
+          ];
+        };
       }
     );
 }
