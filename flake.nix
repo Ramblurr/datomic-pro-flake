@@ -23,13 +23,19 @@
       {
         overlays = final: prev: {
           datomic-pro = pkgs.callPackage ./pkgs/datomic-pro.nix { };
-          datomic-pro-container = pkgs.callPackage ./pkgs/datomic-pro-container-image.nix { };
+          datomic-pro-container = pkgs.callPackage ./pkgs/datomic-pro-container-image.nix {
+            imageTag = final.datomic-pro.version;
+          };
+          datomic-pro-container-unstable = pkgs.callPackage ./pkgs/datomic-pro-container-image.nix {
+            imageTag = "unstable";
+          };
           datomic-generate-properties = pkgs.callPackage ./pkgs/datomic-generate-properties.nix { };
         };
         packages = {
           default = self.packages.${system}.datomic-pro;
           datomic-pro = pkgs.datomic-pro;
           datomic-pro-container = pkgs.datomic-pro-container;
+          datomic-pro-container-unstable = pkgs.datomic-pro-container-unstable;
           datomic-generate-properties = pkgs.datomic-generate-properties;
         };
         nixosModules = {

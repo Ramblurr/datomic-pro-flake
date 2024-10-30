@@ -1,4 +1,5 @@
 {
+  imageTag,
   lib,
   stdenv,
   fetchzip,
@@ -45,7 +46,7 @@ let
 in
 dockerTools.buildLayeredImage {
   name = "ghcr.io/ramblurr/datomic-pro";
-  tag = datomic-pro.version;
+  tag = imageTag;
   fromImage = null;
   contents = [
     datomic-pro
