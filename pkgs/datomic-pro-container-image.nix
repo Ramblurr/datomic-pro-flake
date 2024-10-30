@@ -7,7 +7,7 @@
   datomic-generate-properties,
   writeShellScriptBin,
   coreutils,
-  jdk-minimal,
+  jdk21_headless,
   babashka,
   hostname,
   bash,
@@ -17,7 +17,7 @@
 let
   entrypoint = writeShellScriptBin "datomic-entrypoint" ''
     set -e
-    export PATH=${bash}/bin:${hostname}/bin:${jdk-minimal}/bin:${coreutils}/bin:${babashka}:$PATH
+    export PATH=${bash}/bin:${hostname}/bin:${jdk21_headless}/bin:${coreutils}/bin:${babashka}:$PATH
     if [ "$(id -u)" = "0" ]; then
       echo "WARNING: Running Datomic as root is not recommended. Please run as a non-root user."
       echo "         This can be ignored if you are using rootless mode."

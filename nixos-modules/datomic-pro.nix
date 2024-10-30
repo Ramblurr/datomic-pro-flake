@@ -28,7 +28,7 @@ in
     services.datomic-pro = {
       enable = lib.mkEnableOption "Datomic Pro";
       package = lib.mkPackageOption pkgs "datomic-pro" { };
-      javaPackage = lib.mkPackageOption pkgs "jdk-minimal" { };
+      javaPackage = lib.mkPackageOption pkgs "jdk21_headless" { };
       secretsFile = lib.mkOption {
         type = lib.types.nullOr lib.types.path;
         default = null;

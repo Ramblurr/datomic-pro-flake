@@ -2,7 +2,7 @@
   lib,
   stdenv,
   fetchzip,
-  jdk-minimal,
+  jdk21_headless,
   ...
 }:
 
@@ -11,13 +11,13 @@ in
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "datomic-pro";
-  version = "1.0.7075";
+  version = "1.0.7260";
 
   src = fetchzip {
     url = "https://datomic-pro-downloads.s3.amazonaws.com/${finalAttrs.version}/datomic-pro-${finalAttrs.version}.zip";
-    sha256 = "sha256-5WBtENqvH7n2iuNxXwjPlR7tDiKSYoF7EXgBE6BflGg=";
+    sha256 = "sha256-J3uGNOcA2JsHGecQbnS2w57XCfiF3H0FNcBJ+vB/OYE=";
   };
-  propagatedBuildInputs = [ jdk-minimal ];
+  propagatedBuildInputs = [ jdk21_headless ];
   installPhase = ''
     runHook preInstall
     ls -al $src

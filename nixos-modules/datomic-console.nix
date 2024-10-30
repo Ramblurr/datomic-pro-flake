@@ -13,7 +13,7 @@ in
     services.datomic-console = {
       enable = lib.mkEnableOption "Datomic Pro Console";
       package = lib.mkPackageOption pkgs "datomic-pro" { };
-      javaPackage = lib.mkPackageOption pkgs "jdk-minimal" { };
+      javaPackage = lib.mkPackageOption pkgs "jdk21_headless" { };
       port = lib.mkOption {
         type = lib.types.port;
         description = "The port the console will bind to";

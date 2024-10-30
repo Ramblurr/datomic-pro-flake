@@ -18,15 +18,10 @@
           overlays = [ self.overlays."${system}" ];
         };
 
-        jdk-minimal = pkgs.jdk21.override {
-          headless = true;
-          enableJavaFX = false;
-          enableGnome2 = false;
-        };
+        jdk-minimal = pkgs.jdk21_headless;
       in
       {
         overlays = final: prev: {
-          jdk-minimal = jdk-minimal;
           datomic-pro = pkgs.callPackage ./pkgs/datomic-pro.nix { };
           datomic-pro-container = pkgs.callPackage ./pkgs/datomic-pro-container-image.nix { };
           datomic-generate-properties = pkgs.callPackage ./pkgs/datomic-generate-properties.nix { };

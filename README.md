@@ -126,7 +126,7 @@ This flake also provides a container image for Datomic Pro that can be driven en
 If you don't want to build the container image yourself with nix, you can get the latest image with:
 
 ``` shell
-docker/podman pull ghcr.io/ramblurr/datomic-pro:<LATEST_DATOMIC_VERSION>
+docker/podman pull ghcr.io/ramblurr/datomic-pro:1.0.7260
 ```
 
 The available tags you can find here: https://github.com/users/Ramblurr/packages/datomic-pro-flake/package/datomic-pro
@@ -203,7 +203,7 @@ Please note the tag below may not be up to date.
 ---
 services:
   datomic-transactor:
-    image: ghcr.io/ramblurr/datomic-pro:1.0.7075
+    image: ghcr.io/ramblurr/datomic-pro:1.0.7260
     environment:
       DATOMIC_STORAGE_ADMIN_PASSWORD: unsafe
       DATOMIC_STORAGE_DATOMIC_PASSWORD: unsafe
@@ -214,7 +214,7 @@ services:
     #user: 1000:1000 # if using rootful containers uncomment this
 
   datomic-console:
-    image: ghcr.io/ramblurr/datomic-pro:1.0.7075
+    image: ghcr.io/ramblurr/datomic-pro:1.0.7260
     command: console
     environment:
       DB_URI: datomic:dev://datomic-transactor:4334/?password=unsafe
@@ -266,7 +266,7 @@ services:
       retries: 30
 
   datomic-storage-migrator:
-    image: ghcr.io/ramblurr/datomic-pro:1.0.7075
+    image: ghcr.io/ramblurr/datomic-pro:1.0.7260
     environment:
       PGUSER: postgres
       PGPASSWORD: unsafe
@@ -282,7 +282,7 @@ services:
         condition: service_healthy
 
   datomic-transactor:
-    image: ghcr.io/ramblurr/datomic-pro:1.0.7075
+    image: ghcr.io/ramblurr/datomic-pro:1.0.7260
     environment:
       DATOMIC_STORAGE_ADMIN_PASSWORD: unsafe
       DATOMIC_STORAGE_DATOMIC_PASSWORD: unsafe
@@ -313,7 +313,7 @@ services:
         condition: service_completed_successfully
 
   datomic-console:
-    image: ghcr.io/ramblurr/datomic-pro:1.0.7075
+    image: ghcr.io/ramblurr/datomic-pro:1.0.7260
     command: console
     environment:
       DB_URI: datomic:sql://?jdbc:postgresql://datomic-storage:5432/datomic?user=datomic&password=datomic
