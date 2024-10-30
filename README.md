@@ -20,7 +20,7 @@ All of the above are tested automatically with a virtual machine!
         - [`flake.nix`](#flakenix)
         - [`/etc/datomic-pro/secrets.properties`](#etcdatomic-prosecretsproperties)
         - [`configuration.nix`](#configurationnix)
-    - [🐋 Usage - Docker (OCI) Container Image](#🐋-usage---docker-oci-container-image)
+    - [🐋 Usage - Docker (OCI) Container Image](#-usage---docker-oci-container-image)
         - [Transactor Mode](#transactor-mode)
             - [Env vars](#env-vars)
         - [Console Mode](#console-mode)
