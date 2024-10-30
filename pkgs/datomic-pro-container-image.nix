@@ -6,6 +6,8 @@
   datomic-pro,
   datomic-generate-properties,
   writeShellScriptBin,
+  cacert,
+  bashInteractive,
   coreutils,
   jdk21_headless,
   babashka,
@@ -15,9 +17,10 @@
 }:
 
 let
+  jdk = jdk21_headless;
   entrypoint = writeShellScriptBin "datomic-entrypoint" ''
     set -e
-    export PATH=${bash}/bin:${hostname}/bin:${jdk21_headless}/bin:${coreutils}/bin:${babashka}:$PATH
+    export PATH=${bash}/bin:${hostname}/bin:${jdk}/bin:${coreutils}/bin:${babashka}:$PATH
     if [ "$(id -u)" = "0" ]; then
       echo "WARNING: Running Datomic as root is not recommended. Please run as a non-root user."
       echo "         This can be ignored if you are using rootless mode."
@@ -44,6 +47,16 @@ dockerTools.buildLayeredImage {
   name = "ghcr.io/ramblurr/datomic-pro";
   tag = datomic-pro.version;
   fromImage = null;
+  contents = [
+    datomic-pro
+    entrypoint
+    datomic-generate-properties
+    bashInteractive
+    coreutils
+    babashka
+    jdk
+    cacert
+  ];
   config = {
     WorkingDir = datomic-pro;
     Entrypoint = [ "${entrypoint}/bin/datomic-entrypoint" ];

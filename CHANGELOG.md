@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Include sqlite, postgresql, and mysql JDBC drivers by default
 - Added `unstable` container image tag that follows the `main` branch.
+- Added coreutils and bash to the OCI container image, to make administration easier
 
 ### Fixed
 
