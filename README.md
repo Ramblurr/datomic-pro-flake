@@ -12,6 +12,9 @@
 
 All of the above are tested automatically with a virtual machine!
 
+
+**Project status:** Experimental but ready for testing. Breaking changes may occur until version 1.0. The 1.0 release will be considered production-ready.
+
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
@@ -182,6 +185,11 @@ The following environment vars configure the properties, refer to the Datomic do
 * `DATOMIC_VALCACHE_PATH` - `valcache-path`
 * `DATOMIC_WRITE_CONCURRENCY` - `write-concurrency`
 
+If you want to provide your own `transactor.properties`, you can opt out of all of the above by:
+
+1. Placing your properties file into a location such that `/config/transactor.properties` will exist when the container runs.
+2. Set the env variable `DOCKER_DATOMIC_GENERATE_PROPERTIES_SKIP` to anything except an empty string.
+
 ### Console Mode
 
 Runs the Datomic Console.
@@ -198,7 +206,7 @@ Runs the Datomic Console.
 
 #### Datomic Pro with Local Storage
 
-Please note the tag below may not be up to date.
+Be sure to `mkdir data/ config/` before running this.
 
 ``` yaml
 ---
@@ -224,13 +232,79 @@ services:
     #user: 1000:1000 # if using rootful containers uncomment this
 ```
 
+#### Datomic Pro with sqlite storage
+
+Be sure to `mkdir data/ config/` before running this.
+
+``` yaml
+---
+services:
+  datomic-transactor:
+    image: ghcr.io/ramblurr/datomic-pro:unstable
+    environment:
+      DATOMIC_PROTOCOL: sql
+      DATOMIC_SQL_URL: jdbc:sqlite:/data/datomic-sqlite.db
+      DATOMIC_SQL_DRIVER_CLASS: org.sqlite.JDBC
+      DATOMIC_JAVA_OPTS: -Dlogback.configurationFile=/config/logback.xml
+      # this one is for the containers
+      DATOMIC_HOST: datomic-transactor
+      # this one is for the host machine
+      DATOMIC_ALT_HOST: "127.0.0.1"
+    volumes:
+      - "./data:/data:z"
+      - "./config:/config:z"
+    ports:
+      - 127.0.0.1:4334:4334
+    depends_on:
+      datomic-storage-migrator:
+        condition: service_completed_successfully
+
+  datomic-console:
+    image: ghcr.io/ramblurr/datomic-pro:unstable
+    command: console
+    environment:
+      # you don’t specify the db name in the uri (because console can access all dbs)
+      DB_URI: "datomic:sql://?jdbc:sqlite:/data/datomic-sqlite.db"
+    volumes:
+      - "./data:/data:z"
+    ports:
+      - 127.0.0.1:8081:8080
+    depends_on:
+      datomic-storage-migrator:
+        condition: service_completed_successfully
+
+  datomic-storage-migrator:
+    image: ghcr.io/ramblurr/datomic-pro:unstable
+    volumes:
+      - "./data:/data:z"
+    entrypoint: /bin/sh
+    command: |
+      -c '
+      echo "Creating SQLite database and schema..."
+      sqlite3 /data/datomic-sqlite.db "
+      CREATE TABLE IF NOT EXISTS datomic_kvs (
+        id TEXT NOT NULL PRIMARY KEY,
+        rev INTEGER,
+        map TEXT,
+        val BLOB
+      );"
+      echo "Database initialization complete."
+      '
+
+      export DATOMIC_PROTOCOL=sql
+      export DATOMIC_SQL_URL=jdbc:sqlite:/tmp/db.db
+      export DATOMIC_SQL_DRIVER_CLASS=org.sqlite.JDBC
+      export DATOMIC_ALT_HOST=127.0.0.1
+      export DATOMIC_JAVA_OPTS=-Dlogback.configurationFile=/config/logback.xml
+```
+
 #### Datomic Pro with Postgres Storage and memcached
 
 This compose file is near-production ready. But you shouldn't manage the
 lifecycle of the postgres schema this way. How you do it depends on your
 environment.
 
-Please note the tag below may not be up to date.
+Be sure to `mkdir data/ config/` before running this.
 
 ``` yaml
 ---

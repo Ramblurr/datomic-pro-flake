@@ -90,8 +90,11 @@ in
         mkdir -p ${stateDir}/data ${stateDir}/log
       '';
       script = ''
-        ${cfg.package}/bin/transactor ${runtimePropertiesPath}
+        ${cfg.package}/bin/datomic-transactor ${runtimePropertiesPath}
       '';
+      environment = {
+        DATOMIC_JAVA_OPTS = "-Dlogback.configurationFile ${cfg.package}/share/datomic-pro/logback-sample.xml";
+      };
       serviceConfig = {
         Type = "simple";
         DynamicUser = true;

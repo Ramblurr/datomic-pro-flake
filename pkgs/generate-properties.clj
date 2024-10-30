@@ -62,12 +62,13 @@
                       "memory-index-threshold" "32m"
                       "object-cache-max" "128m"})
 
-(def config-sql-defaults {"host" "0.0.0.0"
-                          "port" "4334"
-                          "sql-driver-class" "org.postgresql.Driver"
-                          "memory-index-max" "256m"
+(def config-sql-defaults {"host"                   "0.0.0.0"
+                          "port"                   "4334"
+                          "sql-driver-class"       "org.postgresql.Driver"
+                          "memory-index-max"       "256m"
+                          "data-dir"               "/data"
                           "memory-index-threshold" "32m"
-                          "object-cache-max" "128m"})
+                          "object-cache-max"       "128m"})
 
 (defn get-config [protocol prop env-var]
   (or
@@ -105,12 +106,12 @@
     props))
 
 (defn get-ip []
-  (str/trim (p/shell {:out :string} "hostname -i")))
+  (str/trim (:out (p/shell {:out :string} "hostname -i"))))
 
 (defn update-alt-host [props]
   (if (contains? props "alt-host")
-    (assoc props "alt-host" (get-ip))
-    props))
+    props
+    (assoc props "alt-host" (get-ip))))
 
 (defn conf-file []
   (or

@@ -54,7 +54,7 @@ in
       wantedBy = [ "multi-user.target" ];
       script = ''
         db_uri="$(<"$CREDENTIALS_DIRECTORY/datomic-console-db-uri")"
-        ${cfg.package}/bin/console -p ${toString cfg.port} "${cfg.alias}" "$db_uri"
+        ${cfg.package}/bin/datomic-console -p ${toString cfg.port} "${cfg.alias}" "$db_uri"
       '';
       path = [ cfg.javaPackage ];
       serviceConfig = {

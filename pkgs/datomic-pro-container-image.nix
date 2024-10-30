@@ -1,24 +1,40 @@
 {
-  imageTag,
-  lib,
-  stdenv,
-  fetchzip,
-  dockerTools,
-  datomic-pro,
-  datomic-generate-properties,
-  writeShellScriptBin,
-  cacert,
-  bashInteractive,
-  coreutils,
-  jdk21_headless,
   babashka,
-  hostname,
   bash,
+  bashInteractive,
+  cacert,
+  coreutils,
+  datomic-generate-properties,
+  datomic-pro,
+  dockerTools,
+  fetchzip,
+  hostname,
+  imageTag,
+  jdk21_headless,
+  lib,
+  mysql_jdbc,
+  runCommand,
+  sqlite-jdbc,
+  stdenv,
+  writeShellScriptBin,
+  ## TODO: remove these, they are only for testing
+  sqlite-interactive,
+  gnugrep,
+  which,
+  findutils,
+  vim,
   ...
 }:
 
 let
   jdk = jdk21_headless;
+
+  datomicBuild = datomic-pro.override {
+    extraJavaPkgs = [
+      sqlite-jdbc
+      mysql_jdbc
+    ];
+  };
   entrypoint = writeShellScriptBin "datomic-entrypoint" ''
     set -e
     export PATH=${bash}/bin:${hostname}/bin:${jdk}/bin:${coreutils}/bin:${babashka}:$PATH
@@ -35,13 +51,21 @@ let
         echo "DB_URI is not set. Please set DB_URI environment variable or provide a file path with DB_URI_FILE."
         exit 1
       fi
-      ${datomic-pro}/bin/console -p 8080 dev "$DB_URI"
+      ${datomicBuild}/bin/datomic-console -p 8080 dev "$DB_URI"
     else
-      echo "Generating Datomic Properties"
-      ${datomic-generate-properties}/bin/datomic-generate-properties
+      if [ -z "$DOCKER_DATOMIC_GENERATE_PROPERTIES_SKIP" ]; then
+        echo "Generating Datomic Properties"
+        ${datomic-generate-properties}/bin/datomic-generate-properties
+      else
+        echo "Skipping Datomic Properties Generation"
+      fi
       echo "Starting Datomic Transactor..."
-      ${datomic-pro}/bin/transactor "$DATOMIC_TRANSACTOR_PROPERTIES_PATH"
+      ${datomicBuild}/bin/datomic-transactor "$DATOMIC_TRANSACTOR_PROPERTIES_PATH"
     fi
+  '';
+  env-shim = runCommand "env-shim" { } ''
+    mkdir -p $out/usr/bin
+    ln -s ${coreutils}/bin/env $out/usr/bin/env
   '';
 in
 dockerTools.buildLayeredImage {
@@ -49,19 +73,31 @@ dockerTools.buildLayeredImage {
   tag = imageTag;
   fromImage = null;
   contents = [
-    datomic-pro
-    entrypoint
-    datomic-generate-properties
-    bashInteractive
-    coreutils
     babashka
-    jdk
+    bashInteractive
     cacert
+    coreutils
+    datomic-generate-properties
+    datomicBuild
+    entrypoint
+    env-shim
+    jdk
+    mysql_jdbc
+    sqlite-jdbc
+    ## TODO: remove these, they are only for testing
+    sqlite-interactive
+    gnugrep
+    which
+    findutils
+    vim
   ];
-  config = {
-    WorkingDir = datomic-pro;
-    Entrypoint = [ "${entrypoint}/bin/datomic-entrypoint" ];
+  extraCommands = ''
+    mkdir -p tmp
+    chmod 1777 tmp
+  '';
 
+  config = {
+    Entrypoint = [ "${entrypoint}/bin/datomic-entrypoint" ];
     Env = [
       "DATOMIC_TRANSACTOR_PROPERTIES_PATH=/config/transactor.properties"
       "LC_ALL=C.UTF-8"
@@ -74,7 +110,7 @@ dockerTools.buildLayeredImage {
       "org.opencontainers.image.url" = "https://github.com/Ramblurr/datomic-pro-flake/tree/main/pkgs/datomic-pro-container-image.nix";
       "org.opencontainers.image.source" = "https://github.com/Ramblurr/datomic-pro-flake";
       "org.opencontainers.image.description" = "Datomic Pro";
-      "org.opencontainers.image.version" = datomic-pro.version;
+      "org.opencontainers.image.version" = datomicBuild.version;
       "org.opencontainers.image.licenses" = "Apache-2.0";
     };
     Volumes = {
