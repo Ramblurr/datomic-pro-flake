@@ -31,6 +31,24 @@ jobs:
       - name: Run NixOS module tests
         run: nix flake check
 
+  publish-unstable-image:
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+    # if we are on the main branch
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Build datomic-pro oci image
+        run: nix build .#datomic-pro-container -o container
+      - name: Push container image on new releases
+        run: |
+          nix develop --ignore-environment --command skopeo copy --dest-creds="ramblurr:${{ github.token }}" docker-archive:./container docker://ghcr.io/ramblurr/datomic-pro:unstable
   publish:
     needs: check
     runs-on: ubuntu-latest
