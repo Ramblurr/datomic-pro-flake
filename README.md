@@ -139,6 +139,7 @@ Runs a Datomic Transactor. This is the default mode when the container is run wi
 * A rw volume of `/config` is required.
 * Configure with env vars (see below) or add `/config/transactor.properties` to supply a config to the transactor.
 * A rw volume of `/data` is optional (for use in H2 mode).
+* Postgresql, MySQL, and sqlite JDBC drivers are included by default.
 
 #### Env vars
 

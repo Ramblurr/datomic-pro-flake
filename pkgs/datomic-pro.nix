@@ -3,6 +3,14 @@
   stdenv,
   fetchzip,
   jdk21_headless,
+  sqlite-jdbc,
+  postgresql_jdbc,
+  mysql_jdbc,
+  enableSqlite ? true,
+  # datomic upstream comes with the postgresql jdbc jar, you can override it with the nixpkgs version by setting this true
+  # in either case *a* postgresql jdbc jar will be included
+  enablePostgresql ? false,
+  enableMysql ? true,
   ...
 }:
 
@@ -23,7 +31,17 @@ stdenv.mkDerivation (finalAttrs: {
     ls -al $src
     mkdir -p $out
     cp -r $src/* $out
-    find $out
+    chmod -R u+w $out/lib
+    ${lib.optionalString enableSqlite ''
+      cp ${sqlite-jdbc}/share/java/*.jar $out/lib/
+    ''}
+    ${lib.optionalString enableMysql ''
+      cp ${mysql_jdbc}/share/java/*.jar $out/lib/
+    ''}
+    ${lib.optionalString enablePostgresql ''
+      rm $out/lib/postgresql*.jar
+      cp ${postgresql_jdbc}/share/java/*.jar $out/lib/
+    ''}
     runHook postInstall
   '';
   meta = {
