@@ -6,14 +6,19 @@
 
 ️ This flake exposes:
 
-* A `datomic-pro` nix package
-* ❄ Several NixOS modules for running Datomic Pro on NixOS
-* 🐋 A container image that you can use to run Datomic (no nix required!)
+* A `datomic-pro` nix package (and `console`, and `peer`)
+* ❄ NixOS modules for running Datomic Pro on NixOS
+* 🐋 A container image that you can use to run Datomic Pro (no nix required!)
 
-All of the above are tested automatically with a virtual machine!
-
+All of the above are [end-to-end tested](./tests) by the CI suite in this repo!
 
 **Project status:** Experimental but ready for testing. Breaking changes may occur until version 1.0. The 1.0 release will be considered production-ready.
+
+**Known issues**:
+
+* The OCI container image is rather fat over 700 MB. -> probably not much more we can do about that
+* There's no builtin version pinning yet except for pinning this flake's version. -> this will be fixed before 1.0
+    * The last thing you want is for your database to have a surprise upgrade
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
