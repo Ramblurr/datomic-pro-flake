@@ -68,7 +68,7 @@ stdenv.mkDerivation (
     installPhase = ''
       runHook preInstall
       mkdir -p $out/{bin,lib,share}
-      cp *transactor*.jar $out/lib/
+      mv *transactor*.jar $out/lib/
       rm -rf peer*.jar presto-server
       mkdir -p $out/share/datomic-pro
       cp -R * $out/share/datomic-pro/

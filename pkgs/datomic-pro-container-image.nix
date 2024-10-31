@@ -1,5 +1,4 @@
 {
-  cacert,
   coreutils,
   datomic-generate-properties,
   datomic-pro,
@@ -24,10 +23,6 @@ let
       mysql_jdbc
     ];
   };
-  entrypointSmall = writeShellScriptBin "datomic-entrypoint" ''
-    #! ${runtimeShell}
-      ${datomicBuild}/bin/datomic-transactor "$DATOMIC_TRANSACTOR_PROPERTIES_PATH"
-  '';
   entrypoint = writeShellScriptBin "datomic-entrypoint" ''
     #! ${runtimeShell}
     set -e
@@ -72,13 +67,6 @@ dockerTools.buildLayeredImage {
   contents = [
     dockerTools.usrBinEnv
     dockerTools.binSh
-    #cacert
-    #datomic-generate-properties
-    #datomicBuild
-    #entrypoint
-    #env-shim
-    #mysql_jdbc
-    #sqlite-jdbc
   ];
   extraCommands = ''
     mkdir -p tmp
@@ -86,7 +74,7 @@ dockerTools.buildLayeredImage {
   '';
 
   config = {
-    Entrypoint = [ "${entrypointSmall}/bin/datomic-entrypoint" ];
+    Entrypoint = [ "${entrypoint}/bin/datomic-entrypoint" ];
     Env = [
       "DATOMIC_TRANSACTOR_PROPERTIES_PATH=/config/transactor.properties"
       "LC_ALL=C.UTF-8"

@@ -28,6 +28,10 @@ jobs:
         run: nix build .#datomic-pro
       - name: Build datomic-pro oci image
         run: nix build .#datomic-pro-container -o container
+      - name: Build datomic-pro oci image unstable
+        run: nix build .#datomic-pro-container-unstable -o container
+      - name: Build datomic-pro-peer nix package
+        run: nix build .#datomic-pro-peer
       - name: Run NixOS module tests
         run: nix flake check
 
