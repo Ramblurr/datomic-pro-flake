@@ -236,6 +236,19 @@ services:
 
 Be sure to `mkdir data/ config/` before running this.
 
+And also pre-create the sqlite database:
+
+``` shell
+mkdir -p data/ config/
+sqlite3 data/datomic-sqlite.db "
+CREATE TABLE IF NOT EXISTS datomic_kvs (
+  id TEXT NOT NULL PRIMARY KEY,
+  rev INTEGER,
+  map TEXT,
+  val BLOB
+);"
+```
+
 ``` yaml
 ---
 services:
@@ -255,9 +268,6 @@ services:
       - "./config:/config:z"
     ports:
       - 127.0.0.1:4334:4334
-    depends_on:
-      datomic-storage-migrator:
-        condition: service_completed_successfully
 
   datomic-console:
     image: ghcr.io/ramblurr/datomic-pro:unstable
@@ -269,9 +279,6 @@ services:
       - "./data:/data:z"
     ports:
       - 127.0.0.1:8081:8080
-    depends_on:
-      datomic-storage-migrator:
-        condition: service_completed_successfully
 
   datomic-storage-migrator:
     image: ghcr.io/ramblurr/datomic-pro:unstable
@@ -281,21 +288,8 @@ services:
     command: |
       -c '
       echo "Creating SQLite database and schema..."
-      sqlite3 /data/datomic-sqlite.db "
-      CREATE TABLE IF NOT EXISTS datomic_kvs (
-        id TEXT NOT NULL PRIMARY KEY,
-        rev INTEGER,
-        map TEXT,
-        val BLOB
-      );"
       echo "Database initialization complete."
       '
-
-      export DATOMIC_PROTOCOL=sql
-      export DATOMIC_SQL_URL=jdbc:sqlite:/tmp/db.db
-      export DATOMIC_SQL_DRIVER_CLASS=org.sqlite.JDBC
-      export DATOMIC_ALT_HOST=127.0.0.1
-      export DATOMIC_JAVA_OPTS=-Dlogback.configurationFile=/config/logback.xml
 ```
 
 #### Datomic Pro with Postgres Storage and memcached

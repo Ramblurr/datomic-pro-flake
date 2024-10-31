@@ -21,9 +21,6 @@ services:
       - "/etc/datomic-docker/logback.xml:/logback.xml:ro"
     ports:
       - 127.0.0.1:4334:4334
-    depends_on:
-      datomic-storage-migrator:
-        condition: service_completed_successfully
 
   datomic-console:
     image: ${IMAGE}
@@ -37,24 +34,3 @@ services:
       - "/etc/datomic-docker/logback.xml:/logback.xml:ro"
     ports:
       - 127.0.0.1:8081:8080
-    depends_on:
-      datomic-storage-migrator:
-        condition: service_completed_successfully
-
-  datomic-storage-migrator:
-    image: ${IMAGE}
-    volumes:
-      - "/var/lib/datomic-docker/data:/data:z"
-    entrypoint: /bin/sh
-    command: |
-      -c '
-      echo "Creating SQLite database and schema..."
-      sqlite3 /data/datomic-sqlite.db "
-      CREATE TABLE IF NOT EXISTS datomic_kvs (
-          id TEXT NOT NULL PRIMARY KEY,
-          rev INTEGER,
-          map TEXT,
-          val BLOB
-      );"
-      echo "Database initialization complete."
-      '

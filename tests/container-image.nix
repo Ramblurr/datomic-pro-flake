@@ -31,9 +31,9 @@ makeTest {
           pkgs.datomic-pro
           pkgs.bash
           pkgs.vim
-
+          pkgs.sqlite-interactive
           (pkgs.writeShellScriptBin "run-datomic-test" ''
-            ${pkgs.jdk}/bin/java -Ddatomic.uri=datomic:sql://app?jdbc:sqlite:/var/lib/datomic-docker/data/datomic-sqlite.db \
+            ${pkgs.jdk}/bin/java "-Ddatomic.uri=datomic:sql://app?jdbc:sqlite:/var/lib/datomic-docker/data/datomic-sqlite.db" \
                  -cp ".:${pkgs.sqlite-jdbc}/share/java/sqlite-jdbc-${pkgs.sqlite-jdbc.version}.jar:${pkgs.datomic-pro-peer}/share/java/*" \
                  clojure.main -m hello
           '')
@@ -100,6 +100,12 @@ makeTest {
             </root>
           </configuration>
         '';
+        users.users.root = {
+          hashedPassword = lib.mkForce null;
+          hashedPasswordFile = lib.mkForce null;
+          initialPassword = lib.mkForce null;
+          password = lib.mkForce "root";
+        };
         environment.etc."datomic-docker/docker-compose.yml".text = builtins.readFile ./fixtures/docker-compose-sqlite.yml;
 
         #environment.etc."datomic-docker/deps.edn".text = ''
@@ -118,13 +124,24 @@ makeTest {
     docker.wait_for_unit("sockets.target")
     docker.succeed("mkdir -p /var/lib/datomic-docker/data")
     docker.succeed("mkdir -p /var/lib/datomic-docker/config")
-    docker.succeed("docker load --input='${pkgs.datomic-pro-container}'")
-
-    docker.succeed("cd /etc/datomic-docker && docker compose up -d")
+    docker.succeed("""
+      echo "Creating SQLite database and schema..." && \
+      sqlite3 /var/lib/datomic-docker/data/datomic-sqlite.db "
+      CREATE TABLE IF NOT EXISTS datomic_kvs (
+        id TEXT NOT NULL PRIMARY KEY,
+        rev INTEGER,
+        map TEXT,
+        val BLOB
+      );" && \
+      echo "Database initialization complete."
+    """)
     docker.wait_for_file("/var/lib/datomic-docker/data/datomic-sqlite.db")
+    docker.succeed("echo Loading docker image && docker load --input='${pkgs.datomic-pro-container}'")
+    docker.succeed("cd /etc/datomic-docker && docker compose up -d")
     docker.wait_for_open_port(4334)
 
     docker.wait_until_succeeds("cd /etc/datomic-docker && docker compose logs datomic-transactor | grep -q 'System started'")
+
     docker.wait_for_open_port(8081)
 
     machine.succeed("cd /etc/datomic-docker && run-datomic-test")

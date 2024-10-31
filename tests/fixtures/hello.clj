@@ -28,6 +28,7 @@
 
 (defn -main []
   (println "Creating database and schema...")
+  (println "My datomic uri is '" db-uri "'")
   (try
     (let [ts      (java.util.Date.)
           conn    (create-database ts)

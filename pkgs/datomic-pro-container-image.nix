@@ -1,7 +1,5 @@
 {
   babashka,
-  bash,
-  bashInteractive,
   cacert,
   coreutils,
   datomic-generate-properties,
@@ -10,25 +8,19 @@
   fetchzip,
   hostname,
   imageTag,
-  jdk21_headless,
+  jre_minimal,
   lib,
   mysql_jdbc,
   runCommand,
+  runtimeShell,
   sqlite-jdbc,
   stdenv,
   writeShellScriptBin,
-  ## TODO: remove these, they are only for testing
-  sqlite-interactive,
-  gnugrep,
-  which,
-  findutils,
-  vim,
   ...
 }:
 
 let
-  jdk = jdk21_headless;
-
+  jre = jre_minimal;
   datomicBuild = datomic-pro.override {
     extraJavaPkgs = [
       sqlite-jdbc
@@ -36,8 +28,9 @@ let
     ];
   };
   entrypoint = writeShellScriptBin "datomic-entrypoint" ''
+    #! ${runtimeShell}
     set -e
-    export PATH=${bash}/bin:${hostname}/bin:${jdk}/bin:${coreutils}/bin:${babashka}:$PATH
+    export PATH=${hostname}/bin:${jre}/bin:${coreutils}/bin:${babashka}:$PATH
     if [ "$(id -u)" = "0" ]; then
       echo "WARNING: Running Datomic as root is not recommended. Please run as a non-root user."
       echo "         This can be ignored if you are using rootless mode."
@@ -65,7 +58,6 @@ let
   '';
   env-shim = runCommand "env-shim" { } ''
     mkdir -p $out/usr/bin
-    ln -s ${coreutils}/bin/env $out/usr/bin/env
     # conveniently symlink these in place so an admin can access them with podman run -it
     for cmd in transactor console shell run repl; do
       ln -s ${datomicBuild}/bin/datomic-$cmd $out/usr/bin/datomic-$cmd
@@ -77,23 +69,18 @@ dockerTools.buildLayeredImage {
   tag = imageTag;
   fromImage = null;
   contents = [
+    dockerTools.usrBinEnv
+    dockerTools.binSh
     babashka
-    bashInteractive
     cacert
     coreutils
     datomic-generate-properties
     datomicBuild
     entrypoint
     env-shim
-    jdk
+    jre
     mysql_jdbc
     sqlite-jdbc
-    ## TODO: remove these, they are only for testing
-    sqlite-interactive
-    gnugrep
-    which
-    findutils
-    vim
   ];
   extraCommands = ''
     mkdir -p tmp
