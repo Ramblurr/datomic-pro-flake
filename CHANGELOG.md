@@ -23,11 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - nix pkg: Exposed more packages: `datomic-shell`, `datomic-run`, `datomic-repl`, `datomic-peer-server`
 - nixos module: You can now configure: logging, extra classpath entries, and extra java options.
 - nix pkg: Added datomic-pro-peer package which is the datomic peer library with all of its dependencies
+- nix pkg: Added option to build slimmed down JRE for datomic-pro
 
 ### Changed
 
 - nix pkg: Updated datomic-pro to version 1.0.7260
-- nix pkg: Switched to Nix's JDK 21 headless package (now that it is sufficiently headless
+- nix pkg: Switched to Nix's JDK 21 headless package (which is supported by Datomic)
+- oci image: Use the slimmed down JRE and a custom babashka build to reduce size of the image
 
 ### Fixed
 

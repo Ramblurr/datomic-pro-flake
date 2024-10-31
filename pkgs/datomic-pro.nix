@@ -1,23 +1,24 @@
 {
-  makeWrapper,
-  lib,
-  stdenv,
+  babashka,
   fetchzip,
   jdk21_headless,
-  sqlite,
-  sqlite-jdbc,
-  extraLibs ? [ ],
-  extraJavaPkgs ? [ ],
+  jre,
+  lib,
+  makeWrapper,
+  stdenv,
+  extraLibs ? [ ], # native libs will be added to datomic's library path
+  extraJavaPkgs ? [ ], # jars contained in share/java will be added to datomic's class path
+  withCustomJre ? false, # set to true to built a custom jre with only the required modules
+  overrideJre ? null, # provide your own jre/jdk package that datomic-pro will use
   ...
 }:
-
-let
-  jdk = jdk21_headless;
-in
 
 stdenv.mkDerivation (
   finalAttrs:
   let
+    jdk = jdk21_headless;
+    actualJre =
+      if withCustomJre then "$out/jre" else (if overrideJre != null then "${overrideJre}" else "${jre}");
     classpath = "$out/share/datomic-pro/resources:$out/lib/datomic-transactor-pro-${finalAttrs.version}.jar:$out/share/datomic-pro/lib/*:$out/share/datomic-pro/samples/clj:$out/share/datomic-pro/bin";
     libpath = lib.makeLibraryPath extraLibs;
   in
@@ -29,15 +30,46 @@ stdenv.mkDerivation (
       url = "https://datomic-pro-downloads.s3.amazonaws.com/${finalAttrs.version}/datomic-pro-${finalAttrs.version}.zip";
       hash = "sha256-J3uGNOcA2JsHGecQbnS2w57XCfiF3H0FNcBJ+vB/OYE=";
     };
-    propagatedBuildInputs = [ jdk ];
-    nativeBuildInputs = [ makeWrapper ];
+    nativeBuildInputs =
+      [
+        makeWrapper
+      ]
+      ++ lib.optionals withCustomJre [
+        jdk
+        babashka
+      ];
     dontConfigure = true;
-    dontBuild = true;
+    dontBuild = !withCustomJre;
 
+    stripDebugFlags = lib.optionals withCustomJre [ "--strip-unneeded" ];
+
+    buildPhase = lib.optionalString withCustomJre ''
+      runHook preBuild
+      # Create a temporary file to store the jdeps output
+      mkdir -p tmp
+
+      # Scan all jar files and analyze their dependencies
+      find lib -name "*.jar" -exec bash -c "${jdk}/bin/jdeps --multi-release base --ignore-missing-deps --print-module-deps {} >> tmp/modules.txt" \;
+
+      ${jdk}/bin/jdeps --ignore-missing-deps --print-module-deps datomic-transactor*.jar >> tmp/modules.txt
+      # Combine all unique modules into a comma delimited string
+      modules=$(${babashka}/bin/bb -e '(print (str/join "," (->> (slurp *in*) str/split-lines (mapcat #(str/split % #",")) distinct (remove str/blank?))))' < tmp/modules.txt)
+
+      rm -rf tmp
+      # Build the minimal JRE with the detected modules
+      jlink --module-path ${jdk}/lib/openjdk/jmods \
+            --no-man-pages \
+            --no-header-files \
+            --add-modules "$modules" \
+            --output $out/jre
+
+      runHook postBuild
+    '';
     installPhase = ''
       runHook preInstall
       mkdir -p $out/{bin,lib,share}
       cp *transactor*.jar $out/lib/
+      rm -rf peer*.jar presto-server
       mkdir -p $out/share/datomic-pro
       cp -R * $out/share/datomic-pro/
       mv $out/share/datomic-pro/bin/logback.xml $out/share/datomic-pro/logback-sample.xml
@@ -51,7 +83,7 @@ stdenv.mkDerivation (
       }
       ${lib.concatMapStringsSep "\n" (pl: "install_jars ${lib.escapeShellArg pl}") extraJavaPkgs}
 
-      makeWrapper ${jdk}/bin/java $out/bin/datomic-transactor \
+      makeWrapper ${actualJre}/bin/java $out/bin/datomic-transactor \
         --set-default "JAVA_OPTS" "-XX:+UseG1GC -XX:MaxGCPauseMillis=50 -Djava.library.path=\$LD_LIBRARY_PATH" \
         --set-default "DATOMIC_JAVA_OPTS" "" \
         --prefix LD_LIBRARY_PATH : "${libpath}" \
@@ -63,7 +95,7 @@ stdenv.mkDerivation (
         --add-flags "--main" \
         --add-flags "datomic.launcher"
 
-      makeWrapper ${jdk}/bin/java $out/bin/datomic-console \
+      makeWrapper ${actualJre}/bin/java $out/bin/datomic-console \
         --chdir "$out/share/datomic-pro" \
         --prefix CLASSPATH : "$out/share/datomic-pro/lib/console/*:${classpath}" \
         --add-flags "-server" \
@@ -77,7 +109,7 @@ stdenv.mkDerivation (
         --add-flags "--main" \
         --add-flags "datomic.console"
 
-      makeWrapper ${jdk}/bin/java $out/bin/datomic-shell \
+      makeWrapper ${actualJre}/bin/java $out/bin/datomic-shell \
         --chdir "$out/share/datomic-pro" \
         --prefix CLASSPATH : "${classpath}" \
         --add-flags "-server" \
@@ -89,7 +121,7 @@ stdenv.mkDerivation (
         --add-flags clojure.main \
         --add-flags "$out/share/datomic-pro/bin/shell.clj"
 
-      makeWrapper ${jdk}/bin/java $out/bin/datomic-run \
+      makeWrapper ${actualJre}/bin/java $out/bin/datomic-run \
         --chdir "$out/share/datomic-pro" \
         --prefix CLASSPATH : "${classpath}" \
         --add-flags "-server" \

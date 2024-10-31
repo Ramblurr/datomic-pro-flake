@@ -2,7 +2,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    #clj-nix.url = "github:jlesquembre/clj-nix";
+    clj-nix.url = "github:jlesquembre/clj-nix";
   };
 
   outputs =
@@ -10,16 +10,18 @@
       self,
       nixpkgs,
       flake-utils,
+      clj-nix,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ self.overlays."${system}" ];
+          overlays = [
+            clj-nix.overlays.default
+            self.overlays."${system}"
+          ];
         };
-
-        jdk-minimal = pkgs.jdk21_headless;
       in
       {
         overlays = final: prev: {
@@ -70,6 +72,7 @@
           buildInputs = [
             pkgs.skopeo
             pkgs.babashka
+            pkgs.dive
             pkgs.gnumake
           ];
         };

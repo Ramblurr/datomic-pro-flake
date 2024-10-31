@@ -3,8 +3,6 @@
   maven,
   fetchzip,
   stdenv,
-  jre,
-  jdk,
   ...
 }:
 
@@ -28,8 +26,6 @@ stdenv.mkDerivation (
       nativeBuildInputs = [
         maven
       ];
-
-      JAVA_HOME = jdk;
 
       buildPhase = ''
         runHook preBuild

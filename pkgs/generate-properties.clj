@@ -1,4 +1,4 @@
-#!/usr/bin/env bb
+#!@babashkaBin@
 (require '[babashka.fs :as fs])
 (require '[babashka.process :as p])
 

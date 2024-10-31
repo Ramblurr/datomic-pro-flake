@@ -1,14 +1,11 @@
 {
-  babashka,
   cacert,
   coreutils,
   datomic-generate-properties,
   datomic-pro,
   dockerTools,
-  fetchzip,
   hostname,
   imageTag,
-  jre_minimal,
   lib,
   mysql_jdbc,
   runCommand,
@@ -20,17 +17,21 @@
 }:
 
 let
-  jre = jre_minimal;
   datomicBuild = datomic-pro.override {
+    withCustomJre = true;
     extraJavaPkgs = [
       sqlite-jdbc
       mysql_jdbc
     ];
   };
+  entrypointSmall = writeShellScriptBin "datomic-entrypoint" ''
+    #! ${runtimeShell}
+      ${datomicBuild}/bin/datomic-transactor "$DATOMIC_TRANSACTOR_PROPERTIES_PATH"
+  '';
   entrypoint = writeShellScriptBin "datomic-entrypoint" ''
     #! ${runtimeShell}
     set -e
-    export PATH=${hostname}/bin:${jre}/bin:${coreutils}/bin:${babashka}:$PATH
+    export PATH=${hostname}/bin:${coreutils}/bin:$PATH
     if [ "$(id -u)" = "0" ]; then
       echo "WARNING: Running Datomic as root is not recommended. Please run as a non-root user."
       echo "         This can be ignored if you are using rootless mode."
@@ -71,16 +72,13 @@ dockerTools.buildLayeredImage {
   contents = [
     dockerTools.usrBinEnv
     dockerTools.binSh
-    babashka
-    cacert
-    coreutils
-    datomic-generate-properties
-    datomicBuild
-    entrypoint
-    env-shim
-    jre
-    mysql_jdbc
-    sqlite-jdbc
+    #cacert
+    #datomic-generate-properties
+    #datomicBuild
+    #entrypoint
+    #env-shim
+    #mysql_jdbc
+    #sqlite-jdbc
   ];
   extraCommands = ''
     mkdir -p tmp
@@ -88,7 +86,7 @@ dockerTools.buildLayeredImage {
   '';
 
   config = {
-    Entrypoint = [ "${entrypoint}/bin/datomic-entrypoint" ];
+    Entrypoint = [ "${entrypointSmall}/bin/datomic-entrypoint" ];
     Env = [
       "DATOMIC_TRANSACTOR_PROPERTIES_PATH=/config/transactor.properties"
       "LC_ALL=C.UTF-8"

@@ -18,7 +18,6 @@ in
     services.datomic-console = {
       enable = lib.mkEnableOption "Datomic Console";
       package = lib.mkPackageOption pkgs "datomic-pro" { };
-      javaPackage = lib.mkPackageOption pkgs "jdk21_headless" { };
       port = lib.mkOption {
         type = lib.types.port;
         description = "The port the console will bind to";
@@ -151,7 +150,6 @@ in
         db_uri="$(<"$CREDENTIALS_DIRECTORY/datomic-console-db-uri")"
         ${cfg.package}/bin/datomic-console -p ${toString cfg.port} "${cfg.alias}" "$db_uri"
       '';
-      path = [ cfg.javaPackage ];
       environment =
         {
           DATOMIC_JAVA_OPTS = toString extraJavaOptions;
