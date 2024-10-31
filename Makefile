@@ -13,6 +13,9 @@ test: test/nixos test/container
 datomic-pro:
 	nix build .#datomic-pro -o result --show-trace
 
+datomic-pro-peer:
+	nix build .#datomic-pro-peer -o result --show-trace
+
 test/pkg-dev: datomic-pro
 	 mkdir -p data
 	./result/bin/datomic-transactor tests/fixtures/testdev.properties

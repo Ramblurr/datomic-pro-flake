@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - nix pkg: Added ability to override the build and add extra native libs or java libs
 - nix pkg: Exposed more packages: `datomic-shell`, `datomic-run`, `datomic-repl`, `datomic-peer-server`
 - nixos module: You can now configure: logging, extra classpath entries, and extra java options.
+- nix pkg: Added datomic-pro-peer package which is the datomic peer library with all of its dependencies
 
 ### Changed
 

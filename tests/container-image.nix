@@ -31,6 +31,12 @@ makeTest {
           pkgs.datomic-pro
           pkgs.bash
           pkgs.vim
+
+          (pkgs.writeShellScriptBin "run-datomic-test" ''
+            ${pkgs.jdk}/bin/java -Ddatomic.uri=datomic:sql://app?jdbc:sqlite:/var/lib/datomic-docker/data/datomic-sqlite.db \
+                 -cp ".:${pkgs.sqlite-jdbc}/share/java/sqlite-jdbc-${pkgs.sqlite-jdbc.version}.jar:${pkgs.datomic-pro-peer}/share/java/*" \
+                 clojure.main -m hello
+          '')
         ];
         environment.etc."datomic-docker/logback.xml".text = ''
           <configuration>
@@ -96,14 +102,12 @@ makeTest {
         '';
         environment.etc."datomic-docker/docker-compose.yml".text = builtins.readFile ./fixtures/docker-compose-sqlite.yml;
 
-        environment.etc."datomic-docker/deps.edn".text = ''
-          {:paths ["."]
-           :deps  {com.datomic/peer       {:local/root "${pkgs.datomic-pro}/share/datomic-pro/peer-${pkgs.datomic-pro.version}.jar"}
-                   org.xerial/sqlite-jdbc {:local/root "${pkgs.sqlite-jdbc}/share/java/sqlite-jdbc-${pkgs.sqlite-jdbc.version}.jar"}}
-
-           :aliases {:run {:jvm-opts  ["-Ddatomic.uri=datomic:sql://app?jdbc:sqlite:/var/lib/datomic-docker/data/datomic-sqlite.db"]
-                           :main-opts ["-m" "hello"]}}}
-        '';
+        #environment.etc."datomic-docker/deps.edn".text = ''
+        #  {:paths ["."]
+        #   :extra-paths ["${pkgs.datomic-pro-peer}/share/java/*" "${pkgs.sqlite-jdbc}/share/java/sqlite-jdbc-${pkgs.sqlite-jdbc.version}.jar"]
+        #   :aliases {:run {:jvm-opts  ["-Ddatomic.uri=datomic:sql://app?jdbc:sqlite:/var/lib/datomic-docker/data/datomic-sqlite.db"]
+        #                   :main-opts ["-m" "hello"]}}}
+        #'';
         environment.etc."datomic-docker/hello.clj".text = builtins.readFile ./fixtures/hello.clj;
         environment.etc."datomic-docker/.env".text = "IMAGE=ghcr.io/ramblurr/datomic-pro:${pkgs.datomic-pro.version}";
       };
@@ -123,8 +127,6 @@ makeTest {
     docker.wait_until_succeeds("cd /etc/datomic-docker && docker compose logs datomic-transactor | grep -q 'System started'")
     docker.wait_for_open_port(8081)
 
-    # Note: running the clojure test requires internet, because maven deps will be downloaded
-    #       unfortunately the datomic distribution does not include all deps for the peer lib.
-    machine.succeed("cd /etc/datomic-docker && clojure -M:run")
+    machine.succeed("cd /etc/datomic-docker && run-datomic-test")
   '';
 }

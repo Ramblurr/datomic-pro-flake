@@ -71,6 +71,12 @@ makeTest {
           pkgs.vim
           pkgs.bash
           package
+          pkgs.datomic-pro-peer
+          (pkgs.writeShellScriptBin "run-datomic-test" ''
+            ${pkgs.jdk}/bin/java -Ddatomic.uri=datomic:dev://localhost:4334/test-db?password=do-not-do-it-this-way-in-prod-peer \
+                 -cp ".:${pkgs.datomic-pro-peer}/share/java/*" \
+                 clojure.main -m hello
+          '')
         ];
         users.users.root = {
           hashedPassword = lib.mkForce null;
@@ -78,15 +84,16 @@ makeTest {
           initialPassword = lib.mkForce null;
           password = lib.mkForce "root";
         };
-        environment.etc."datomic-test/deps.edn" = {
-          mode = "0600";
-          text = ''
-            {:paths   ["."]
-             :deps    {com.datomic/peer {:local/root "${package}/share/datomic-pro/peer-${version}.jar"}}
-             :aliases {:run {:jvm-opts  ["-Ddatomic.uri=datomic:dev://localhost:4334/test-db?password=do-not-do-it-this-way-in-prod-peer"]
-                             :main-opts ["-m" "hello"]}}}
-          '';
-        };
+        # I thought we could just use the clojure cli took, but it always reaches out to maven unfortunately to get itself
+        #environment.etc."datomic-test/deps.edn" = {
+        #  mode = "0600";
+        #  text = ''
+        #    {:paths   ["."]
+        #     :extra-paths ["${pkgs.datomic-pro-peer}/share/java/*"]
+        #     :aliases {:run {:jvm-opts  ["-Ddatomic.uri=datomic:dev://localhost:4334/test-db?password=do-not-do-it-this-way-in-prod-peer"]
+        #                     :main-opts ["-m" "hello"]}}}
+        #  '';
+        #};
         environment.etc."datomic-test/hello.clj" = {
           mode = "0600";
           text = builtins.readFile ./fixtures/hello.clj;
@@ -100,9 +107,7 @@ makeTest {
     machine.wait_for_open_port(4334)
     machine.wait_until_succeeds("journalctl -u datomic-pro -o cat | grep -q 'System started'")
 
-    # Note: running the clojure test requires internet, because maven deps will be downloaded
-    #       unfortunately the datomic distribution does not include all deps for the peer lib.
-    machine.succeed("cd /etc/datomic-test && clojure -M:run")
+    machine.succeed("cd /etc/datomic-test && run-datomic-test")
 
     machine.wait_for_unit("datomic-console.service")
     machine.wait_for_open_port(8080)
