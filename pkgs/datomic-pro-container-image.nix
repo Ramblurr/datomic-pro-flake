@@ -66,6 +66,10 @@ let
   env-shim = runCommand "env-shim" { } ''
     mkdir -p $out/usr/bin
     ln -s ${coreutils}/bin/env $out/usr/bin/env
+    # conveniently symlink these in place so an admin can access them with podman run -it
+    for cmd in transactor console shell run repl; do
+      ln -s ${datomicBuild}/bin/datomic-$cmd $out/usr/bin/datomic-$cmd
+    done
   '';
 in
 dockerTools.buildLayeredImage {

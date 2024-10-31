@@ -1,19 +1,31 @@
 DOCKER ?= docker
 
 check:
-	nix flake check
-test: check
+	nix --print-build-logs flake check
 
+test/nixos:
+	nix --print-build-logs run '.#checks.x86_64-linux.moduleTest.driver'
+test/container:
+	nix --print-build-logs run '.#checks.x86_64-linux.containerImageTest.driver'
+
+test: test/nixos test/container
 
 datomic-pro:
 	nix build .#datomic-pro -o result --show-trace
 
-test-pkg: datomic-pro
-	./result/bin/datomic-transactor testsql.properties
-	#./result/bin/datomic-transactor ./result/share/datomic-pro/config/samples/dev-transactor-template.properties
+test/pkg-dev: datomic-pro
+	 mkdir -p data
+	./result/bin/datomic-transactor tests/fixtures/testdev.properties
 
-test-pkg-console: datomic-pro
-	./result/bin/datomic-console -p 8080 app datomic:dev://localhost:4334/
+test/pkg-sql: datomic-pro
+	 mkdir -p data
+	./result/bin/datomic-transactor tests/fixtures/testsql.properties
+
+test/pkg-console-dev: datomic-pro
+	./result/bin/datomic-console -p 8080 app 'datomic:dev://localhost:4334/?password=datpass'
+
+test/pkg-console-sql: datomic-pro
+	./result/bin/datomic-console -p 8080 app 'datomic:sql://?jdbc:sqlite:data/db-sqlite.db'
 
 datomic-pro-container:
 	nix build .#datomic-pro-container -o datomic-pro-container --show-trace

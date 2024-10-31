@@ -1,0 +1,60 @@
+---
+services:
+  datomic-transactor:
+    image: ${IMAGE}
+    environment:
+      DATOMIC_PROTOCOL: sql
+      DATOMIC_SQL_URL: jdbc:sqlite:/data/datomic-sqlite.db
+      DATOMIC_SQL_DRIVER_CLASS: org.sqlite.JDBC
+      DATOMIC_JAVA_OPTS: -Dlogback.configurationFile=/logback.xml
+      # this one is for the other containers
+      DATOMIC_HOST: datomic-transactor
+      # this one is for the host machine
+      DATOMIC_ALT_HOST: "127.0.0.1"
+      # shrink ram requirements for test environment
+      DATOMIC_MEMORY_INDEX_MAX: 32m
+      DATOMIC_OBJECT_CACHE_MAX: 32m
+      DATOMIC_MEMORY_INDEX_THRESHOLD: 32m
+    volumes:
+      - "/var/lib/datomic-docker/data:/data:z"
+      - "/var/lib/datomic-docker/config:/config:z"
+      - "/etc/datomic-docker/logback.xml:/logback.xml:ro"
+    ports:
+      - 127.0.0.1:4334:4334
+    depends_on:
+      datomic-storage-migrator:
+        condition: service_completed_successfully
+
+  datomic-console:
+    image: ${IMAGE}
+    command: console
+    environment:
+      # you don’t specify the db name in the uri (because console can access all dbs)
+      DB_URI: "datomic:sql://?jdbc:sqlite:/data/datomic-sqlite.db"
+      DATOMIC_JAVA_OPTS: -Dlogback.configurationFile=/logback.xml
+    volumes:
+      - "/var/lib/datomic-docker/data:/data:z"
+      - "/etc/datomic-docker/logback.xml:/logback.xml:ro"
+    ports:
+      - 127.0.0.1:8081:8080
+    depends_on:
+      datomic-storage-migrator:
+        condition: service_completed_successfully
+
+  datomic-storage-migrator:
+    image: ${IMAGE}
+    volumes:
+      - "/var/lib/datomic-docker/data:/data:z"
+    entrypoint: /bin/sh
+    command: |
+      -c '
+      echo "Creating SQLite database and schema..."
+      sqlite3 /data/datomic-sqlite.db "
+      CREATE TABLE IF NOT EXISTS datomic_kvs (
+          id TEXT NOT NULL PRIMARY KEY,
+          rev INTEGER,
+          map TEXT,
+          val BLOB
+      );"
+      echo "Database initialization complete."
+      '

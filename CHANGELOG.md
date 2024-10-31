@@ -7,12 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-## v0.2.0 (2024-10-30)
-
 ### Breaking
 
-- `transactor` bin renamed to `datomic-transactor`
-- `console` bin renamed to `datomic-console`
+- nix pkg: `transactor` bin renamed to `datomic-transactor`
+- nix pkg: `console` bin renamed to `datomic-console`
+- nixos module: removed the default settings that leaned towards dev/h2 storage by default
 
 ### Added
 
@@ -22,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - `unstable` container image tag that follows the `main` branch
 - nix pkg: Added ability to override the build and add extra native libs or java libs
 - nix pkg: Exposed more packages: `datomic-shell`, `datomic-run`, `datomic-repl`, `datomic-peer-server`
+- nixos module: You can now configure: logging, extra classpath entries, and extra java options.
 
 ### Changed
 
