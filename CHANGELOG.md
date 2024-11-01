@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## v0.2.0 (2024-11-01)
+
 ### Breaking
 
 - nix pkg: `transactor` bin renamed to `datomic-transactor`
