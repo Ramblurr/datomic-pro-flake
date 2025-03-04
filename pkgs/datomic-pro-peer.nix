@@ -10,9 +10,9 @@ stdenv.mkDerivation (
   finalAttrs:
   let
     pname = "datomic-pro-peer";
-    version = "1.0.7260";
+    version = "1.0.7277";
     mvnHash = "sha256-09AKaahc4MSc0d/gWJyMpB60O7WZOauj7vS1X4rtPjI=";
-    zipHash = "sha256-J3uGNOcA2JsHGecQbnS2w57XCfiF3H0FNcBJ+vB/OYE=";
+    zipHash = "sha256-fqmw+MOUWPCAhHMROjP48BwWCcRknk+KECM3WvF/Ml4=";
     manualMvnSources = [ ];
     manualMvnArtifacts = [ ];
     dependencies = stdenv.mkDerivation ({

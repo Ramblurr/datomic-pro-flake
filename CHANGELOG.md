@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- nix pkg: Updated datomic-pro to version 1.0.7277
+
 ## v0.3.0 (2024-11-01)
 
 Nothing changed in 0.3.0, I just am struggling with [flakehub's](https://flakehub.com/flake/ramblurr/datomic-pro?view=releases) release process.

@@ -24,11 +24,11 @@ stdenv.mkDerivation (
   in
   {
     pname = "datomic-pro";
-    version = "1.0.7260";
+    version = "1.0.7277";
 
     src = fetchzip {
       url = "https://datomic-pro-downloads.s3.amazonaws.com/${finalAttrs.version}/datomic-pro-${finalAttrs.version}.zip";
-      hash = "sha256-J3uGNOcA2JsHGecQbnS2w57XCfiF3H0FNcBJ+vB/OYE=";
+      hash = "sha256-fqmw+MOUWPCAhHMROjP48BwWCcRknk+KECM3WvF/Ml4=";
     };
     nativeBuildInputs =
       [
