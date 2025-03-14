@@ -406,7 +406,7 @@ Feel free to [open an issue](https://github.com/Ramblurr/datomic-pro-flake/issue
 The contents of this flake is licensed under the Apache-2.0, just like Datomic Pro itself.
 
 ```
-Copyright 2024 Casey Link
+Copyright 2024-2025 Casey Link
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
