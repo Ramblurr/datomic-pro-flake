@@ -42,3 +42,6 @@ clean:
 
 load: datomic-pro-container-unstable
 	$(DOCKER) load < ./datomic-pro-container-unstable
+
+update:
+	nix develop --command ./update.sh

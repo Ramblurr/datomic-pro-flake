@@ -3,6 +3,10 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     clj-nix.url = "github:jlesquembre/clj-nix";
+    snowfall-drift = {
+      url = "github:snowfallorg/drift";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -11,6 +15,7 @@
       nixpkgs,
       flake-utils,
       clj-nix,
+      snowfall-drift
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
@@ -19,6 +24,7 @@
           inherit system;
           overlays = [
             clj-nix.overlays.default
+            snowfall-drift.overlays.default
             self.overlays."${system}"
           ];
         };
@@ -70,6 +76,7 @@
         };
         devShells.default = pkgs.mkShell {
           buildInputs = [
+            snowfall-drift.packages.${system}.drift
             pkgs.skopeo
             pkgs.babashka
             pkgs.dive
