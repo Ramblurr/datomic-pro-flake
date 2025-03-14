@@ -1,6 +1,7 @@
 {
   lib,
   maven,
+  perl,
   fetchzip,
   stdenv,
   ...
@@ -25,10 +26,14 @@ stdenv.mkDerivation (
 
       nativeBuildInputs = [
         maven
+        perl
       ];
 
       buildPhase = ''
         runHook preBuild
+        # the couchbase-client artifact with version 1.0.3 as of 2025-03 no longer exists. it is provided scope, so we simply prevent mvn from worrying about it.
+        cat pom.xml | perl -0777 -pe 's/<dependency>\s*<groupId>couchbase<\/groupId>\s*<artifactId>couchbase-client<\/artifactId>.*?<\/dependency>//gs' > modified-pom.xml
+        mv modified-pom.xml pom.xml
         mvn de.qaware.maven:go-offline-maven-plugin:1.2.8:resolve-dependencies -Dmaven.repo.local=$out/.m2
 
         for artifactId in ${builtins.toString manualMvnArtifacts}
