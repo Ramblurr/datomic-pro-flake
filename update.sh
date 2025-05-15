@@ -11,21 +11,22 @@ echo "Current version (transactor): $currentVersion"
 echo "Current version (peer)      : $currentVersionPeer"
 
 if [[ "$latestVersion" == "$currentVersion" ]] && [[ "$latestVersion" == "$currentVersionPeer" ]]; then
-    echo "Package is up-to-date"
-    exit 0
+  echo "Package is up-to-date"
+  exit 0
 fi
 
-url="https://datomic-pro-downloads.s3.amazonaws.com/$latestVersion/datomic-pro-$latestVersion.zip";
+url="https://datomic-pro-downloads.s3.amazonaws.com/$latestVersion/datomic-pro-$latestVersion.zip"
 prefetch=$(nix-prefetch-url "$url")
-hash=$(nix hash convert --hash-algo sha256 --to sri $prefetch)
+echo prefetch: "$prefetch"
+hash=$(nix hash convert --hash-algo sha256 --to sri "$prefetch")
+version_=${latestVersion//./_}
 
-if [[ "$latestVersion" != "$currentVersion" ]]; then
-  drift rewrite --verbose  datomic-pro  --file ./pkgs/datomic-pro.nix --new-version "$latestVersion" --new-hash "$hash" --name datomic-pro --current-version "$currentVersion"
-  echo "Updated datomic-pro from $currentVersion to $latestVersion"
-fi
-
-
-if [[ "$latestVersion" != "$currentVersionPeer" ]]; then
-  drift rewrite --verbose  datomic-pro-peer  --file ./pkgs/datomic-pro-peer.nix --new-version "$latestVersion" --new-hash "$hash" --name datomic-pro-peer --current-version "$currentVersion"
-  echo "Updated datomic-pro-peer from $currentVersion to $latestVersion"
-fi
+echo "New hash: $hash"
+echo
+echo
+cat <<EOF
+  datomic-pro_${version_} = pkgs.callPackage ./datomic-pro.nix {
+    version = "${latestVersion}";
+    hash = "${hash}";
+  };
+EOF
