@@ -15,7 +15,7 @@
       nixpkgs,
       flake-utils,
       clj-nix,
-      snowfall-drift
+      snowfall-drift,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
@@ -28,27 +28,28 @@
             self.overlays."${system}"
           ];
         };
+
+        versions = import ./pkgs/versions.nix { inherit pkgs; };
       in
       {
-        overlays = final: prev: {
-          datomic-pro = pkgs.callPackage ./pkgs/datomic-pro.nix { };
-          datomic-pro-peer = pkgs.callPackage ./pkgs/datomic-pro-peer.nix { };
-          datomic-pro-container = pkgs.callPackage ./pkgs/datomic-pro-container-image.nix {
-            imageTag = final.datomic-pro.version;
+        overlays =
+          final: prev:
+          versions
+          // {
+            datomic-pro-container = pkgs.callPackage ./pkgs/datomic-pro-container-image.nix {
+              imageTag = final.datomic-pro.version;
+            };
+            datomic-pro-container-unstable = pkgs.callPackage ./pkgs/datomic-pro-container-image.nix {
+              imageTag = "unstable";
+            };
+            datomic-generate-properties = pkgs.callPackage ./pkgs/datomic-generate-properties.nix { };
           };
-          datomic-pro-container-unstable = pkgs.callPackage ./pkgs/datomic-pro-container-image.nix {
-            imageTag = "unstable";
-          };
-          datomic-generate-properties = pkgs.callPackage ./pkgs/datomic-generate-properties.nix { };
-        };
         packages = {
           default = self.packages.${system}.datomic-pro;
-          datomic-pro = pkgs.datomic-pro;
-          datomic-pro-peer = pkgs.datomic-pro-peer;
           datomic-pro-container = pkgs.datomic-pro-container;
           datomic-pro-container-unstable = pkgs.datomic-pro-container-unstable;
           datomic-generate-properties = pkgs.datomic-generate-properties;
-        };
+        } // builtins.mapAttrs (name: _: pkgs.${name}) versions;
         nixosModules = {
           datomic-pro = import ./nixos-modules/datomic-pro.nix;
           datomic-console = import ./nixos-modules/datomic-console.nix;

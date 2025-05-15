@@ -14,11 +14,6 @@ All of the above are [end-to-end tested](./tests) by the CI suite in this repo!
 
 **Project status:** Experimental but ready for testing. Breaking changes may occur until version 1.0. The 1.0 release will be considered production-ready.
 
-**Known issues**:
-
-* There's no builtin version pinning yet except for pinning this flake's version. -> this will be fixed before 1.0
-    * The last thing you want is for your database to have a surprise upgrade
-
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
@@ -41,6 +36,18 @@ All of the above are [end-to-end tested](./tests) by the CI suite in this repo!
 
 <!-- markdown-toc end -->
 
+
+## Usage - Nix Package
+
+`pkgs.datomic-pro` will always be the latest release, but the following specific versions are also available:
+
+-  `pkgs.datomic-pro_1_0_7364` (latest)
+-  `pkgs.datomic-pro_1_0_7277`
+
+And for peer:
+
+-  `pkgs.datomic-pro-peer_1_0_7364` (latest)
+-  `pkgs.datomic-pro-peer_1_0_7277`
 
 ## Usage - NixOS Module
 

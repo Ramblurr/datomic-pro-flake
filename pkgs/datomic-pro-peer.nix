@@ -1,4 +1,7 @@
 {
+  version,
+  mvnHash,
+  zipHash,
   lib,
   maven,
   perl,
@@ -11,9 +14,6 @@ stdenv.mkDerivation (
   finalAttrs:
   let
     pname = "datomic-pro-peer";
-    version = "1.0.7364";
-    mvnHash = "sha256-5QpAlC20mo0IZHoRjiCS3zOCTbM7xM8gHc6n+S42iu0=";
-    zipHash = "sha256-y9jSA4s0aEn9QheZ3YBDtx8wTqOv+9XJXwzyW9R5T4w=";
     manualMvnSources = [ ];
     manualMvnArtifacts = [ ];
     dependencies = stdenv.mkDerivation ({

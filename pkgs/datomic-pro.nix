@@ -1,4 +1,6 @@
 {
+  version,
+  hash,
   babashka,
   fetchzip,
   jdk21_headless,
@@ -24,11 +26,11 @@ stdenv.mkDerivation (
   in
   {
     pname = "datomic-pro";
-    version = "1.0.7364";
+    version = version;
 
     src = fetchzip {
       url = "https://datomic-pro-downloads.s3.amazonaws.com/${finalAttrs.version}/datomic-pro-${finalAttrs.version}.zip";
-      hash = "sha256-y9jSA4s0aEn9QheZ3YBDtx8wTqOv+9XJXwzyW9R5T4w=";
+      hash = hash;
     };
     nativeBuildInputs =
       [

@@ -6,6 +6,7 @@
 }:
 
 let
+  inherit (config.system) stateVersion;
   cfg = config.services.datomic-pro;
   settingsFormat = pkgs.formats.javaProperties { };
   stateDir = "/var/lib/${cfg.stateDirectoryName}";
@@ -26,7 +27,13 @@ in
   options = {
     services.datomic-pro = {
       enable = lib.mkEnableOption "Datomic Pro";
-      package = lib.mkPackageOption pkgs "datomic-pro" { };
+      package = lib.mkOption {
+        type = lib.types.package;
+        description = "Which datomic-pro package to use.";
+        relatedPackages = [
+          "datomic-pro_1_0_7364"
+        ];
+      };
       secretsFile = lib.mkOption {
         type = lib.types.nullOr lib.types.path;
         default = null;
@@ -169,6 +176,24 @@ in
         # The solution is to NOT define log-dir, but instead just define your own logback configuration, we include a variation of the default that logs to stdout and ends up in systemd's journal.
       }
     ];
+    services.datomic-pro.package =
+      let
+        mkThrow = ver: throw "datomic-pro_${ver} was removed, please upgrade your datomic-pro version.";
+        mkWarn =
+          ver:
+          lib.warn ''
+            The datomic-pro package is not pinned and selected automatically by
+            `system.stateVersion`. Right now this is `pkgs.datomic-pro_${ver}`, the
+            oldest datomic-pro version available.
+          '';
+        base =
+          if lib.versionAtLeast config.system.stateVersion "24.11" then
+            pkgs.datomic-pro_1_0_7364
+          else
+            mkWarn pkgs.datomic-pro_1_0_7277;
+      in
+      lib.mkDefault base;
+
     systemd.services.datomic-pro = {
       description = "Datomic Pro";
       wantedBy = [ "multi-user.target" ];

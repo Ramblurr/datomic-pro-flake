@@ -1,0 +1,23 @@
+{ pkgs, ... }:
+rec {
+  datomic-pro_1_0_7364 = pkgs.callPackage ./datomic-pro.nix {
+    version = "1.0.7364";
+    hash = "sha256-y9jSA4s0aEn9QheZ3YBDtx8wTqOv+9XJXwzyW9R5T4w=";
+  };
+  datomic-pro_1_0_7277 = pkgs.callPackage ./datomic-pro.nix {
+    version = "1.0.7277";
+    hash = "sha256-fqmw+MOUWPCAhHMROjP48BwWCcRknk+KECM3WvF/Ml4=";
+  };
+  datomic-pro = datomic-pro_1_0_7364;
+  datomic-pro-peer_1_0_7364 = pkgs.callPackage ./datomic-pro-peer.nix {
+    version = "1.0.7364";
+    mvnHash = "sha256-5QpAlC20mo0IZHoRjiCS3zOCTbM7xM8gHc6n+S42iu0=";
+    zipHash = "sha256-y9jSA4s0aEn9QheZ3YBDtx8wTqOv+9XJXwzyW9R5T4w=";
+  };
+  datomic-pro-peer_1_0_7277 = pkgs.callPackage ./datomic-pro-peer.nix {
+    version = "1.0.7277";
+    mvnHash = "sha256-09AKaahc4MSc0d/gWJyMpB60O7WZOauj7vS1X4rtPjI=";
+    zipHash = "sha256-fqmw+MOUWPCAhHMROjP48BwWCcRknk+KECM3WvF/Ml4=";
+  };
+  datomic-pro-peer = datomic-pro-peer_1_0_7364;
+}
