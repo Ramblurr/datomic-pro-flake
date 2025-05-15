@@ -84,7 +84,7 @@ jobs:
         run: nix build .#datomic-pro-container -o container
       - name: Push container image on new releases
         run: |
-          datomic_version=$(grep 'version = ' pkgs/datomic-pro.nix | cut -d'"' -f2)
+          datomic_version=$(cat pkgs/versions.nix| grep "version =" | head -n1 | cut -d'"' -f2)
           nix develop --ignore-environment --command skopeo copy --dest-creds="ramblurr:${{ github.token }}" docker-archive:./container docker://ghcr.io/ramblurr/datomic-pro:$datomic_version
       - uses: DeterminateSystems/flakehub-push@main
         with:
