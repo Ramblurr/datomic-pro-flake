@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- nix pkg: Updated `datomic-pro` and `datomic-pro-peer` to [version 1.0.7364](https://docs.datomic.com/changes/pro.html#1.0.7364)
+
 ## v0.4.0 (2025-03-14)
 
 ### Changed
