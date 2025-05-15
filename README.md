@@ -24,20 +24,21 @@ All of the above are [end-to-end tested](./tests) by the CI suite in this repo!
 **Table of Contents**
 
 - [datomic-pro-flake](#datomic-pro-flake)
-    - [Usage - NixOS Module](#usage---nixos-module)
-        - [`flake.nix`](#flakenix)
-        - [`/etc/datomic-pro/secrets.properties`](#etcdatomic-prosecretsproperties)
-        - [`configuration.nix`](#configurationnix)
-    - [🐋 Usage - Docker (OCI) Container Image](#-usage---docker-oci-container-image)
-        - [Transactor Mode](#transactor-mode)
-            - [Env vars](#env-vars)
-        - [Console Mode](#console-mode)
-            - [Env vars](#env-vars-1)
-        - [Example Compose](#example-compose)
-            - [Datomic Pro with Local Storage](#datomic-pro-with-local-storage)
-            - [Datomic Pro with Postgres Storage and memcached](#datomic-pro-with-postgres-storage-and-memcached)
-        - [Discussion](#discussion)
-    - [License](#license)
+  - [Usage - NixOS Module](#usage---nixos-module)
+    - [`flake.nix`](#flakenix)
+    - [`/etc/datomic-pro/secrets.properties`](#etcdatomic-prosecretsproperties)
+    - [`configuration.nix`](#configurationnix)
+  - [🐋 Usage - Docker (OCI) Container Image](#-usage---docker-oci-container-image)
+    - [Transactor Mode](#transactor-mode)
+      - [Env vars](#env-vars)
+    - [Console Mode](#console-mode)
+      - [Env vars](#env-vars-1)
+    - [Example Compose](#example-compose)
+      - [Datomic Pro with Local Storage](#datomic-pro-with-local-storage)
+      - [Datomic Pro with SQLite Storage](#datomic-pro-with-sqlite-storage)
+      - [Datomic Pro with Postgres Storage and memcached](#datomic-pro-with-postgres-storage-and-memcached)
+    - [Discussion](#discussion)
+  - [License](#license)
 
 <!-- markdown-toc end -->
 
@@ -237,22 +238,32 @@ services:
     #user: 1000:1000 # if using rootful containers uncomment this
 ```
 
-#### Datomic Pro with sqlite storage
+#### Datomic Pro with SQLite Storage
 
-Be sure to `mkdir data/ config/` before running this.
+1. `mkdir data config`
+2. Prepare an empty SQLite database:
 
-And also pre-create the sqlite database:
-
-``` shell
-mkdir -p data/ config/
-sqlite3 data/datomic-sqlite.db "
-CREATE TABLE IF NOT EXISTS datomic_kvs (
-  id TEXT NOT NULL PRIMARY KEY,
-  rev INTEGER,
-  map TEXT,
-  val BLOB
-);"
-```
+  ``` shell
+  mkdir -p data/ config/
+  sqlite3 data/datomic-sqlite.db "
+  -- Tuning for SQLite in production - same as Rails 8.0
+  PRAGMA foreign_keys = ON;
+  PRAGMA journal_mode = WAL;
+  PRAGMA synchronous = NORMAL;
+  PRAGMA mmap_size = 134217728; -- 128 megabytes
+  PRAGMA journal_size_limit = 67108864; -- 64 megabytes
+  PRAGMA cache_size = 2000;
+  -- Datomic's Schema
+  CREATE TABLE datomic_kvs (
+      id TEXT NOT NULL,
+      rev INTEGER,
+      map TEXT,
+      val BYTEA,
+      CONSTRAINT pk_id PRIMARY KEY (id)
+  );"
+  ```
+  
+3. Use this compose (or pick and choose what you need)
 
 ``` yaml
 ---
@@ -264,10 +275,8 @@ services:
       DATOMIC_SQL_URL: jdbc:sqlite:/data/datomic-sqlite.db
       DATOMIC_SQL_DRIVER_CLASS: org.sqlite.JDBC
       DATOMIC_JAVA_OPTS: -Dlogback.configurationFile=/config/logback.xml
-      # this one is for the containers
-      DATOMIC_HOST: datomic-transactor
-      # this one is for the host machine
-      DATOMIC_ALT_HOST: "127.0.0.1"
+      DATOMIC_HOST: datomic-transactor # this value is so sibling compose containers can connect by DNS name
+      DATOMIC_ALT_HOST: "127.0.0.1" # this value is so apps running on the container's host
     volumes:
       - "./data:/data:z"
       - "./config:/config:z"
@@ -284,17 +293,6 @@ services:
       - "./data:/data:z"
     ports:
       - 127.0.0.1:8081:8080
-
-  datomic-storage-migrator:
-    image: ghcr.io/ramblurr/datomic-pro:unstable
-    volumes:
-      - "./data:/data:z"
-    entrypoint: /bin/sh
-    command: |
-      -c '
-      echo "Creating SQLite database and schema..."
-      echo "Database initialization complete."
-      '
 ```
 
 #### Datomic Pro with Postgres Storage and memcached
