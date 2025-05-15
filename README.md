@@ -59,7 +59,7 @@ And for peer:
    inputs = {
         nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
         # Check https://github.com/Ramblurr/datomic-pro-flake/releases for the latest release tag
-        datomic-pro.url = "https://flakehub.com/f/Ramblurr/datomic-pro/0.5.0.tar.gz";
+        datomic-pro.url = "https://flakehub.com/f/Ramblurr/datomic-pro/0.6.0.tar.gz";
         datomic-pro.nixpkgs = "nixpkgs";
     };
     outputs = { nixpkgs, datomic-pro, ... }@attrs: {
@@ -109,6 +109,7 @@ A basic dev-mode datomic that stores its state in `/var/lib/datomic-pro`:
 {
     services.datomic-pro = {
         enable = true;
+        package = pkgs.datomic-pro_1_0_7364;
         secretsFile = "/etc/datomic-pro/secrets.properties";
         settings = {
             # no secrets in here!
