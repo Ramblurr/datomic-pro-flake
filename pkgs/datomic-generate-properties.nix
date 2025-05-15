@@ -3,7 +3,7 @@
   lib,
   mkBabashka,
   stdenv,
-  substituteAll,
+  replaceVars,
   ...
 }:
 
@@ -20,9 +20,8 @@ stdenv.mkDerivation (
     pname = "datomic-generate-properties";
     version = "0.1";
 
-    src = substituteAll {
+    src = replaceVars ./generate-properties.clj {
       babashkaBin = "${bb}/bin/bb";
-      src = ./generate-properties.clj;
     };
 
     dontUnpack = true;
