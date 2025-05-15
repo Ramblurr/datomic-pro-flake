@@ -16,7 +16,6 @@ All of the above are [end-to-end tested](./tests) by the CI suite in this repo!
 
 **Known issues**:
 
-* The OCI container image is rather fat over 700 MB. -> probably not much more we can do about that
 * There's no builtin version pinning yet except for pinning this flake's version. -> this will be fixed before 1.0
     * The last thing you want is for your database to have a surprise upgrade
 
@@ -53,7 +52,7 @@ All of the above are [end-to-end tested](./tests) by the CI suite in this repo!
    inputs = {
         nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
         # Check https://github.com/Ramblurr/datomic-pro-flake/releases for the latest release tag
-        datomic-pro.url = "https://flakehub.com/f/Ramblurr/datomic-pro/0.1.0.tar.gz";
+        datomic-pro.url = "https://flakehub.com/f/Ramblurr/datomic-pro/0.5.0.tar.gz";
         datomic-pro.nixpkgs = "nixpkgs";
     };
     outputs = { nixpkgs, datomic-pro, ... }@attrs: {

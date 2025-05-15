@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## v0.5.0 (2025-05-15)
+
+This release brings a Datomic version bump to [version 1.0.7364](https://docs.datomic.com/changes/pro.html#1.0.7364).
+
+Also notably the container image size is now 433M, down from over 750M, thanks to Datomic's efforts to slim down the release jar!
+
 ### Changed
 
 - nix pkg: Updated `datomic-pro` and `datomic-pro-peer` to [version 1.0.7364](https://docs.datomic.com/changes/pro.html#1.0.7364)
+- docs: Improved SQLite example with rails 8 inspired tuning
 
 ## v0.4.0 (2025-03-14)
 
