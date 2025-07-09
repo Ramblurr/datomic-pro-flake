@@ -54,27 +54,37 @@
           datomic-pro = import ./nixos-modules/datomic-pro.nix;
           datomic-console = import ./nixos-modules/datomic-console.nix;
         };
-        checks = {
-          # A test of the NixOS module that runs in a VM
-          moduleTest = import ./tests/nixos-module.nix {
-            inherit
-              system
-              pkgs
-              nixpkgs
-              self
-              ;
+        checks =
+          let
+            datomicVersions = pkgs.lib.filterAttrs (
+              name: value: pkgs.lib.hasPrefix "datomic-pro_" name && !pkgs.lib.hasPrefix "datomic-pro-peer_" name
+            ) versions;
+          in
+          builtins.mapAttrs (
+            name: value:
+            # a nixos module test vm for each datomic-pro version
+            import ./tests/nixos-module.nix {
+              inherit
+                system
+                pkgs
+                nixpkgs
+                self
+                ;
+              datomic-pro = value;
+              datomic-pro-peer = versions."datomic-pro-peer_${pkgs.lib.removePrefix "datomic-pro_" name}";
+            }
+          ) datomicVersions
+          // {
+            # A test of the container image that runs in a VM
+            containerImageTest = import ./tests/container-image.nix {
+              inherit
+                system
+                pkgs
+                nixpkgs
+                self
+                ;
+            };
           };
-
-          # A test of the container image that runs in a VM
-          containerImageTest = import ./tests/container-image.nix {
-            inherit
-              system
-              pkgs
-              nixpkgs
-              self
-              ;
-          };
-        };
         devShells.default = pkgs.mkShell {
           buildInputs = [
             snowfall-drift.packages.${system}.drift

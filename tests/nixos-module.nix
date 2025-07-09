@@ -3,6 +3,8 @@
   system,
   pkgs,
   nixpkgs,
+  datomic-pro,
+  datomic-pro-peer,
 }:
 
 let
@@ -24,8 +26,7 @@ makeTest {
         ...
       }:
       let
-        package = config.services.datomic-pro.package;
-        version = config.services.datomic-pro.package.version;
+        version = datomic-pro.version;
       in
       {
         nixpkgs.overlays = [ self.overlays."${system}" ];
@@ -70,11 +71,11 @@ makeTest {
           pkgs.clojure
           pkgs.vim
           pkgs.bash
-          package
-          pkgs.datomic-pro-peer
+          datomic-pro
+          datomic-pro-peer
           (pkgs.writeShellScriptBin "run-datomic-test" ''
             ${pkgs.jdk}/bin/java -Ddatomic.uri=datomic:dev://localhost:4334/test-db?password=do-not-do-it-this-way-in-prod-peer \
-                 -cp ".:${pkgs.datomic-pro-peer}/share/java/*" \
+                 -cp ".:${datomic-pro-peer}/share/java/*" \
                  clojure.main -m hello
           '')
         ];
@@ -89,7 +90,7 @@ makeTest {
         #  mode = "0600";
         #  text = ''
         #    {:paths   ["."]
-        #     :extra-paths ["${pkgs.datomic-pro-peer}/share/java/*"]
+        #     :extra-paths ["${datomic-pro-peer}/share/java/*"]
         #     :aliases {:run {:jvm-opts  ["-Ddatomic.uri=datomic:dev://localhost:4334/test-db?password=do-not-do-it-this-way-in-prod-peer"]
         #                     :main-opts ["-m" "hello"]}}}
         #  '';
