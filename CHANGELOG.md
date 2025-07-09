@@ -7,13 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## v0.7.0 (2025-07-09)
+
+This is a version bump release:
+
+- Added package versions for [version 1.0.7387](https://docs.datomic.com/changes/pro.html#1.0.7387)
+
+`pkgs.datomic-pro` will always be the latest release, but the following specific versions are also available:
+
+-  `pkgs.datomic-pro_1_0_7387` (latest)
+-  `pkgs.datomic-pro_1_0_7364`
+-  `pkgs.datomic-pro_1_0_7277`
+
+And for peer:
+
+-  `pkgs.datomic-pro-peer_1_0_7387` (latest)
+-  `pkgs.datomic-pro-peer_1_0_7364`
+-  `pkgs.datomic-pro-peer_1_0_7277`
+
 ## v0.6.1 (2025-05-15)
 
 No changes, just ci wrangling.
 
 ## v0.6.0 (2025-05-15)
 
-This release brings versioned packages! We recommend you pin your deployments to specific versions and upgrade intentionally  .
+This release brings versioned packages! We recommend you pin your deployments to specific versions and upgrade intentionally.
 
 ### Changed
 
